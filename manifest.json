@@ -1,0 +1,27 @@
+{
+    "manifest_version": 2,
+
+    "name": "Sobnik",
+    "description": "Sobnik",
+    "version": "1.0",
+
+    "permissions": [
+	"http://localhost:8081/*",
+	"http://*/*",
+	"https://*/*",
+	"tabs",
+        "pageCapture"
+    ],
+
+    "background": {
+	"scripts": ["jquery.js", "api.js", "sobnik.js"],
+	"persistent": true
+    },
+    
+    "content_scripts": [
+	{
+	    "matches": ["http://www.avito.ru/*", "https://www.avito.ru/*"],
+	    "js": ["jquery.js", "api.js", "avito.js"]
+	}
+    ]
+}
