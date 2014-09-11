@@ -381,7 +381,8 @@ function sobnikApi ()
 
     var startMarkList = function (board) 
     {
-	$(window).on ('load', function () {
+//	$(window).on ('load', function () {
+	later (5000, function () {
 	    var loc = location.href;
 	    // if current page matches list pattern - start sobnik
 	    for (var i = 0; i < board.list.urls.length; i++)
@@ -398,7 +399,8 @@ function sobnikApi ()
 
     var startMarkPage = function (board) 
     {
-	$(window).on ('load', function () {
+//	$(window).on ('load', function () {
+	later (5000, function () {
 	    var loc = location.href;
 	    // if current page matches list pattern - start sobnik
 	    for (var i = 0; i < board.urls.length; i++)

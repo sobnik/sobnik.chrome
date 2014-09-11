@@ -68,7 +68,7 @@
 	page: {
 	    marks: [
 		{
-		    selector: "div.item h1",
+		    selector: "div.item-page-content h1.h1",
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
 			    +"float:left; margin:12px 0 0 0; padding: 0'>"
