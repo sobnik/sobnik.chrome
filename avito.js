@@ -9,8 +9,7 @@
 	name: "avito.ru",
 
 	urls: [
-	    // FIXME make it any city
-	    "http://www.avito.ru/chelyabinsk/kvartiry/[^\\.]+\\._[\\d]+$"
+	    "http://www.avito.ru/[^/]+/kvartiry/.*_[\\d]+$"
 	],
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
@@ -24,8 +23,81 @@
 	    }
 	},
 
+	list: {
+	    rowSelector: "div.b-catalog div.item", 
+	    hrefSelector: "a", 
+	    pattern: ".*kvartiry.*",
+
+	    urls: [
+		"http://www.avito.ru/[^/]+/kvartiry/sdam/na_dlitelnyy_srok"
+	    ],
+
+	    mark: function (row, ad) {
+		var html = "<span style='display:block;"
+		    +"float:left; margin:4px 0 0 0; padding: 0'>"
+		    +sob.marker (ad)+"</span>";
+		$(row).find ("h3").prepend (html);
+		return $(row).find("h3 span")[0];
+	    },
+	},
+
+	page: {
+	    marks: [
+		{
+		    selector: "div.item h1",
+		    mark: function (parent, ad) {
+			var html = "<span style='display:block;"
+			    +"float:left; margin:12px 0 0 0; padding: 0'>"
+			    +sob.marker (ad)+"</span>";
+			$(parent).prepend (html);
+			return $(parent).find("span")[0];
+		    },
+		},
+		{
+		    selector: "#seller",
+		    mark: function (parent, ad) {
+			var html = "<span style='display:block;"
+			    +"float:left; margin:4px 0 0 0; padding: 0'>"
+			    +sob.marker (ad)+"</span>";
+			$(parent).prepend (html);
+			return $(parent).find("span")[0];
+		    },
+		},
+	    ],
+	},
+
 	fields: {
-	    location: {
+	    name: {
+		selector: "#seller strong",
+		data: {
+		    name: {},
+		},
+	    },
+
+	    photo: {
+		selector: "td.gallery-wrapper div.gallery div.items div.ll a",
+		attr: "href",
+		data: {
+		    photo: {},
+		}
+	    },
+
+	    photoBig: {
+		selector: "td.big-picture div.picture-aligner img",
+		attr: "src",
+		data: {
+		    photo: {},
+		}
+	    },
+
+	    city: {
+		selector: "#map",
+		data: {
+		    city: {}
+		}
+	    },
+
+	    street: {
 		selector: "#toggle_map",
 		data: {
 		    street: {
@@ -64,7 +136,7 @@
 			rx: "(.*\\S+)\\s+руб.",
 			rxi: 1,
 			conv: function (s) {
-			    return s.replace(/\s+/i, "");
+			    return s.replace(/\s+/ig, "");
 			}
 		    }
 		}
@@ -74,9 +146,6 @@
 		selector: "#desc_text",
 		data: {
 		    notes: {},
-		    phone: {
-			conv: sob.extractPhones
-		    }
 		},
 	    },
 
@@ -95,6 +164,22 @@
 		    author: {
 			conv: function () { return "owner"; }
 		    }
+		}
+	    },
+
+	    lat: {
+		selector: "#i_contact div.b-catalog-map",
+		attr: "data-map-lat",
+		data: {
+		    lat: {}
+		}
+	    },
+
+	    lon: {
+		selector: "#i_contact div.b-catalog-map",
+		attr: "data-map-lon",
+		data: {
+		    lon: {}
 		}
 	    },
 

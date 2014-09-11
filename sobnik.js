@@ -15,7 +15,7 @@
 		    .replace ("*", "\\*");
 
 		var pattern = "Content-Location[^\\n]*"+url
-		    +"[^A-Za-z0-9\\+\\/]*([A-Za-z0-9\\+\\/\\r\\n]+)";
+		    +"[^A-Za-z0-9\\+\\/]*([A-Za-z0-9=\\+\\/\\r\\n]+)";
 
 		console.log (pattern);
 		var r = data.match (new RegExp (pattern));

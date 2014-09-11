@@ -2,7 +2,7 @@
 function sobnikApi ()
 {
 
-    var api_url = "http://localhost:8081/api/";
+    var api_url = "http://sobnik.com/api/";
 
     var call = function (method, type, data, callback, statbacks, errback)
     {
@@ -70,50 +70,13 @@ function sobnikApi ()
 	return values;
     }
 
-    var extractPhones = function (s)
+    var later = function (millis, callback)
     {
-	// 1. replace words by numbers
-	s = s
-	    .replace (/один/ig, "1")
-	    .replace (/два/ig, "2")
-	    .replace (/три/ig, "3")
-	    .replace (/четыре/ig, "4")
-	    .replace (/пять/ig, "5")
-	    .replace (/шесть/ig, "6")
-	    .replace (/семь/ig, "7")
-	    .replace (/восемь/ig, "8")
-	    .replace (/девять/ig, "9")
-	    .replace (/ноль/ig, "0");
-	console.log (s);
-
-	// 2. cut all the special symbols
-	s = s.replace (/[\/\<\>\?\;\:\'\"\[\]\{\}\|\~\`\!\@\#\$\%\^\&\*\(\)\-\_\=\+]/g, "");
-	console.log (s);
-	
-	// 3. split by non-digits and spaces
-	s = s.split (/[^\d ]/);
-	console.log (s);
-
-	// FIXME sometimes phones are split with spaces and get 
-	// concatenated here
-	// 4. remove anything but numbers
-	var numbers = [];
-	for (var i = 0; i < s.length; i++)
-	{
-	    var n = s[i].replace (/\D/g, "");
-	    if (n.length < 6)
-		continue;
-
-	    if (n.length == 11 && n.charAt (0) == "8")
-		n = "+7" + n.slice (1);
-
-	    if (n.length == 11 && n.charAt (0) == "7")
-		n = "+7" + n.slice (1);
-
-	    numbers.push (n);
-	}
-
-	return numbers;
+	var to = setTimeout (function () {
+	    clearTimeout (to);
+	    callback ();
+	}, millis);
+	return to;
     }
     
     var gatherFields = function (fields) 
@@ -124,8 +87,8 @@ function sobnikApi ()
 	{
 	    var field = fields[name];
 	    var element = $(field.selector);
-	    //	console.log(name);
-	    //	console.log(element.text());
+	    console.log(name);
+	    console.log(element.text());
 	    if (field.attr)
 		values[name] = all (
 		    element, 
@@ -163,6 +126,13 @@ function sobnikApi ()
 	return features;
     }
 
+    var done = function ()
+    {
+	var div = document.createElement('div');
+	$(div).attr("id", "sobnik-chrome-done-signal");
+	document.body.appendChild (div);
+    }
+
     var gather = function (board) 
     {
 	console.log ("gathering");
@@ -175,7 +145,10 @@ function sobnikApi ()
 
 	var post = function (data) {
 	    console.log (data);
-	    // FIXME call api
+	    
+	    call ("ads", "POST", data);
+	    
+	    done ();
 	};
 
 	if (board.capture)
@@ -215,13 +188,9 @@ function sobnikApi ()
 	var trigger = $(selector);
 	if (trigger.length == 0)
 	{
-	    var to = setTimeout (
-		function () {
-		    clearTimeout (to);
-		    findTrigger (selector, callback);
-		}, 
-		1000
-	    );
+	    later (1000, function () {
+		findTrigger (selector, callback);
+	    });
 	}
 	else
 	{
@@ -251,11 +220,128 @@ function sobnikApi ()
 	}
     }
 
-    var start = function (board) 
+    var lastMarkList = [];
+    var markListDraw = function (board, map, ads)
     {
-	var to = setTimeout (function () {
-	    clearTimeout (to);
+//	console.log ("Removing...");
+//	console.log (lastMarkList);
+	for (var i = 0; i < lastMarkList.length; i++)
+	    $(lastMarkList[i]).remove ();
+	lastMarkList = [];
 
+	for (var i = 0; i < ads.length; i++)
+	{
+	    var a = ads[i];
+	    var row = map[a.Url];
+//	    console.log (row);
+	    if (!row)
+		continue;
+
+	    var mark = board.list.mark (row, a);
+	    lastMarkList.push (mark);	    
+	}
+    }
+
+    var lastMarkPage = [];
+    var markPageDraw = function (board, ads)
+    {
+	console.log ("Removing...");
+	console.log (lastMarkPage);
+	for (var i = 0; i < lastMarkPage.length; i++)
+	    $(lastMarkPage[i]).remove ();
+	lastMarkPage = [];
+
+	for (var i = 0; i < ads.length; i++)
+	{
+	    var a = ads[i];
+	    if (a.Url != location.href)
+		continue;
+
+	    for (var i = 0; i < board.page.marks.length; i++)
+	    {
+		var parent = $(board.page.marks[i].selector);
+		var mark = board.page.marks[i].mark (parent, a);
+		lastMarkPage.push (mark);	    
+	    }
+	}
+    }
+
+    var gatherList = function (board)
+    {
+	var rows = $(board.list.rowSelector);
+	var map = {};
+	var regexp = board.list.pattern ? new RegExp(board.list.pattern) : null;
+	rows.each (function(i, row) {
+	    var url = $(row).find (board.list.hrefSelector).attr("href");
+	    if (regexp && !regexp.test(url))
+		return;
+	    if (url.indexOf (location.hostname) < 0)
+		url = location.origin + url;
+	    map[url] = row;
+	});
+
+	return map;
+    }
+    
+    var markList = function (board)
+    {
+	var retry = 30000; // 30 sec
+	var tryMark = function () 
+	{
+	    var map = gatherList (board);
+//	    console.log (map);
+	    if (map.length == 0)
+		return;
+
+	    var request = {Urls: []};
+	    for (var url in map)
+		request.Urls.push (url);
+//	    console.log (request);
+	    call ("sobnik", "POST", request, function (data) {
+//		console.log (data);
+		markListDraw (board, map, data);
+		later (retry, tryMark);
+	    }, /* statbacks= */null, function () {
+		later (retry, tryMark);
+	    });
+	}
+
+	tryMark ();
+    }
+
+    var markPage = function (board)
+    {
+	var retry = 30000; // 30 sec
+	var tryMark = function () 
+	{
+	    var request = {Urls: [location.href]};
+//	    console.log (request);
+	    call ("sobnik", "POST", request, function (data) {
+//		console.log (data);
+		markPageDraw (board, data);
+		later (retry, tryMark);
+	    }, /* statbacks= */null, function () {
+		later (retry, tryMark);
+	    });
+	}
+
+	tryMark ();
+    }
+
+    var marker = function (a) 
+    {
+	var color = a.Author ? "red" : "#1e2";
+	var title = a.Author ? "Посредник" : "Собственник";
+	return "<div title='"+title+"' style='display:block; "
+	    + "margin-right: 2px;"
+	    + "height: 12px; width: 12px; line-height: 12px; "
+	    + "-moz-border-radius: 50%; border-radius: 50%;"
+	    + "background-color: "+color+";'/>";
+    }
+
+    var startParse = function (board)
+    {
+	later ((Math.random () *  + 1) * 1000, function () {
 	    var loc = location.href;
 	    // if current page matches pattern - start sobnik
 	    for (var i = 0; i < board.urls.length; i++)
@@ -267,8 +353,48 @@ function sobnikApi ()
 		    return;
 		}
 	    }
-	    console.log ("No match "+loc);
-	}, (Math.random () * 10 + 1) * 1000);
+	})
+    }
+
+    var startMarkList = function (board) 
+    {
+	$(window).on ('load', function () {
+	    var loc = location.href;
+	    // if current page matches list pattern - start sobnik
+	    for (var i = 0; i < board.list.urls.length; i++)
+	    {
+		if (loc.match(board.list.urls[i]) != null)
+		{
+		    console.log ("Marking "+loc);
+		    markList (board);
+		    return;
+		}
+	    }
+	})
+    }
+
+    var startMarkPage = function (board) 
+    {
+	$(window).on ('load', function () {
+	    var loc = location.href;
+	    // if current page matches list pattern - start sobnik
+	    for (var i = 0; i < board.urls.length; i++)
+	    {
+		if (loc.match(board.urls[i]) != null)
+		{
+		    console.log ("Marking "+loc);
+		    markPage (board);
+		    return;
+		}
+	    }
+	})
+    }
+
+    var start = function (board) 
+    {
+	startParse (board);
+	startMarkList (board);
+	startMarkPage (board);
     };
 
     var s = {
@@ -276,7 +402,7 @@ function sobnikApi ()
 	dts: dts,
 	dateFmt: dateFmt,
 	gatherFields: gatherFields,
-	extractPhones: extractPhones,
+	marker: marker,
 	start: start
     };
 

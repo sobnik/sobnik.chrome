@@ -2,20 +2,20 @@
     "manifest_version": 2,
 
     "name": "Sobnik",
-    "description": "Sobnik",
+    "description": "Выявляет агентов по недвижимости",
     "version": "1.0",
 
     "permissions": [
-	"http://localhost:8081/*",
-	"http://*/*",
-	"https://*/*",
+	"http://sobnik.com/*",
+	"http://www.avito.ru/*",
+	"https://www.avito.ru/*",
 	"tabs",
         "pageCapture"
     ],
 
     "background": {
-	"scripts": ["jquery.js", "api.js", "sobnik.js"],
-	"persistent": true
+	"scripts": ["jquery.js", "api.js", "sobnik.js"]
+//	"persistent": true
     },
     
     "content_scripts": [
