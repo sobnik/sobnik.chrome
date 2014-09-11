@@ -99,7 +99,7 @@
 	    },
 
 	    photo: {
-		selector: "td.gallery-wrapper div.gallery div.items div.ll a",
+		selector: "td.gallery-wrapper div.gallery-item a",
 		attr: "href",
 		data: {
 		    photo: {},

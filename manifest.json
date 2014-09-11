@@ -1,9 +1,13 @@
 {
     "manifest_version": 2,
 
-    "name": "Sobnik",
-    "description": "Выявляет агентов по недвижимости",
-    "version": "1.0",
+    "name": "Sobnik: фильтрует риелторов",
+    "description": "Выявляет посредников в объявлениях по недвижимости",
+    "version": "1.1",
+
+    "icons": { 
+	"128": "icon_128.png" 
+    },
 
     "permissions": [
 	"http://sobnik.com/*",
@@ -15,7 +19,6 @@
 
     "background": {
 	"scripts": ["jquery.js", "api.js", "sobnik.js"]
-//	"persistent": true
     },
     
     "content_scripts": [
