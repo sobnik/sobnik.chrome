@@ -1,0 +1,17 @@
+
+ Sobnik.Chrome - Sobnik plugin for Chrome
+ ========================================
+
+ This project uses LGPL v3 license, see LICENSE file.
+
+ Sobnik.Chrome - плагин для Chrome для Sobnik (sobnik.com).
+
+ Sobnik выявляет агентов по недвижимости на досках объявлений. 
+ Желающие опробовать плагин могут скачать его на sobnik.com.
+
+ Поддержка досок объявлений:
+ - avito.ru
+
+ Желающие добавить доску могут взять за основу avito.js и создать аналогичный модуль для своей любимой доски. После проверки ваш модуль будет добавлен в Sobnik.Chrome, а ваше имя добавлено в AUTHORS.
+
+ 
