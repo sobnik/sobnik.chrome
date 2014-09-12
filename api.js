@@ -26,6 +26,9 @@ function sobnikApi ()
 {
 
     var api_url = "http://sobnik.com/api/";
+    var crossDomain = false;
+//    var api_url = "http://localhost:8081/api/";
+//    var crossDomain = true;
 
     var call = function (method, type, data, callback, statbacks, errback)
     {
@@ -34,6 +37,7 @@ function sobnikApi ()
 	    type: type,
 	    data: JSON.stringify (data),
 	    success: callback,
+	    crossDomain: crossDomain,
 	    statusCode: statbacks,
 	    error: function (xhr, status, error) {
 		console.log ("API Error, method: "+method+", status: "+status);
@@ -162,7 +166,10 @@ function sobnikApi ()
 
 	var ad = {
 	    Url: location.href,
+	    AdId: board.url2id (location.href),
 	};
+
+	console.assert (ad.AdId, "Bad ID for url "+location.href);
 
 	ad.Fields = gatherFields (board.fields);
 
@@ -255,7 +262,7 @@ function sobnikApi ()
 	for (var i = 0; i < ads.length; i++)
 	{
 	    var a = ads[i];
-	    var row = map[a.Url];
+	    var row = map[a.AdId];
 //	    console.log (row);
 	    if (!row)
 		continue;
@@ -274,10 +281,12 @@ function sobnikApi ()
 	    $(lastMarkPage[i]).remove ();
 	lastMarkPage = [];
 
+	var id = board.url2id (location.href);
+	console.assert (id, "Bad ad id "+location.href);
 	for (var i = 0; i < ads.length; i++)
 	{
 	    var a = ads[i];
-	    if (a.Url != location.href)
+	    if (a.AdId != id)
 		continue;
 
 	    for (var i = 0; i < board.page.marks.length; i++)
@@ -300,7 +309,10 @@ function sobnikApi ()
 		return;
 	    if (url.indexOf (location.hostname) < 0)
 		url = location.origin + url;
-	    map[url] = row;
+
+	    var id = board.url2id (url);
+	    console.assert (id, "Bad ad id "+url);
+	    map[id] = row;
 	});
 
 	return map;
@@ -316,9 +328,9 @@ function sobnikApi ()
 	    if (map.length == 0)
 		return;
 
-	    var request = {Urls: []};
-	    for (var url in map)
-		request.Urls.push (url);
+	    var request = {AdIds: []};
+	    for (var id in map)
+		request.AdIds.push (id);
 //	    console.log (request);
 	    call ("sobnik", "POST", request, function (data) {
 //		console.log (data);
@@ -334,10 +346,12 @@ function sobnikApi ()
 
     var markPage = function (board)
     {
-	var retry = 30000; // 30 sec
+	var retry = 10000; // 10 sec
 	var tryMark = function () 
 	{
-	    var request = {Urls: [location.href]};
+	    var id = board.url2id (location.href);
+	    console.assert (id, "Bad ad id "+location.href);
+	    var request = {AdIds: [id]};
 //	    console.log (request);
 	    call ("sobnik", "POST", request, function (data) {
 //		console.log (data);

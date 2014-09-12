@@ -90,6 +90,13 @@
 	    ],
 	},
 
+	url2id: function (url) {
+	    var id = url.match (/\d+$/);
+	    if (!id)
+		return "";
+	    return "avito:"+id;
+	},
+
 	fields: {
 	    name: {
 		selector: "#seller strong",
