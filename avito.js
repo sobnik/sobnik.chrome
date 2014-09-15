@@ -53,7 +53,7 @@
 	    pattern: ".*kvartiry.*",
 
 	    urls: [
-		"http://www.avito.ru/[^/]+/kvartiry/sdam/na_dlitelnyy_srok"
+		"http://www.avito.ru/[^/]+/kvartiry"
 	    ],
 
 	    mark: function (row, ad) {
@@ -121,8 +121,16 @@
 		}
 	    },
 
+	    photoOne: {
+		selector: "a.photo-job-img-link",
+		attr: "href",
+		data: {
+		    photo: {},
+		}
+	    },
+
 	    city: {
-		selector: "#map",
+		selector: "#map span[itemprop=name]",
 		data: {
 		    city: {}
 		}
@@ -138,15 +146,48 @@
 		}
 	    },
 
+	    daily: {
+		selector: "div.description-expanded div.item-params div a[title*=\"Срок аренды\"]",
+		data: {
+		    daily: {
+			rx: "посуточно",
+			conv: function (s) {
+			    return s ? true : false;
+			},
+		    }
+		},
+	    },
+
+	    type: {
+		selector: "div.description-expanded div.item-params div a[title*=\"Тип объявления\"]",
+		data: {
+		    type: {
+			conv: function (s) {
+			    if (s.indexOf ("Сдам") == 0) return "sdam";
+			    if (s.indexOf ("Сниму") == 0) return "snimu";
+			    if (s.indexOf ("Продам") == 0) return "prodam";
+			    if (s.indexOf ("Куплю") == 0) return "kuplyu";
+			    return "unknown";
+			},
+		    }
+		},
+	    },
+
+	    rooms: {
+		selector: "div.description-expanded div.item-params div a[title*=\"Количество комнат\"]",
+		data: {
+		    rooms: {
+			rx: "(\\d+)\\D+",
+			rxi: 1
+		    },
+		},
+	    },
+
 	    area: {
 		selector: "div.description-expanded div.item-params div:eq(1)",
 		data: {
 		    area: {
 			rx: "\\d*[-]*\\s*\\S+\\s+(\\d+)",
-			rxi: 1
-		    },
-		    rooms: {
-			rx: "(\\d+)\\D+",
 			rxi: 1
 		    },
 		    floor: {
