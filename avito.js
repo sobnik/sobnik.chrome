@@ -38,11 +38,17 @@
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
 
+	untrigger: "div.alert p:contains(\"заблокировано\")",
+
 	clicks: ["span.j-phone-show__insert span.btn__text"],
 
 	capture: {
 	    phoneImage: {
 		selector: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
+		attr: "src"
+	    },
+	    photoImage: {
+		selector: "td.big-picture div.picture-aligner img",
 		attr: "src"
 	    }
 	},
@@ -152,7 +158,7 @@
 		    daily: {
 			rx: "посуточно",
 			conv: function (s) {
-			    return s ? true : false;
+			    return s ? "daily" : "";
 			},
 		    }
 		},

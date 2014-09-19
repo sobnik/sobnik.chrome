@@ -224,7 +224,10 @@ function sobnikApi ()
 	}
 	else
 	{
-	    trigger.on ("load", callback);
+	    if ($(trigger).attr('src') != "")
+		$(trigger).on ('load', callback);
+	    else
+		later (3000, callback);
 	}
     };
 
@@ -239,14 +242,16 @@ function sobnikApi ()
 	    }
 	}
 	
-	if (board.trigger)
+	console.log ("trigger "+board.trigger);
+	findTrigger (board.trigger, function () { gather (board); });
+
+	if (board.untrigger)
 	{
-	    console.log ("trigger "+board.trigger);
-	    findTrigger (board.trigger, function () { gather (board); });
-	}
-	else
-	{
-	    gather (board);
+	    console.log ("untrigger "+board.untrigger);
+	    findTrigger (board.untrigger, function () { 
+		console.log ("cancelled");
+		done (); 
+	    });
 	}
     }
 
@@ -269,6 +274,7 @@ function sobnikApi ()
 
 	    var mark = board.list.mark (row, a);
 	    lastMarkList.push (mark);	    
+	    delete map[a.AdId];
 	}
     }
 
@@ -295,6 +301,7 @@ function sobnikApi ()
 		var mark = board.page.marks[i].mark (parent, a);
 		lastMarkPage.push (mark);	    
 	    }
+	    break;
 	}
     }
 
@@ -437,7 +444,7 @@ function sobnikApi ()
 		// it get's less and less likely that any changes will
 		// be shown by server, so lets backoff so that 
 		// open tabs do not create constant traffic
-		options.retry *= 2;
+		options.retry *= 1.3;
 	    }, tryMark);
 	}
 
@@ -457,7 +464,7 @@ function sobnikApi ()
 
     var startParse = function (board)
     {
-	later ((Math.random () * 10 + 1) * 1000, function () {
+	later ((Math.random () * 6 + 2) * 1000, function () {
 	    var loc = location.href;
 	    // if current page matches pattern - start sobnik
 	    for (var i = 0; i < board.urls.length; i++)
