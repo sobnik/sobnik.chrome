@@ -3,10 +3,10 @@
 
     "name": "Sobnik: фильтрует риелторов",
     "description": "Выявляет посредников в объявлениях по недвижимости",
-    "version": "1.7",
+    "version": "1.8",
 
     "icons": { 
-	"128": "icon_128.png" 
+	"128": "images/icon_128.png" 
     },
 
     "permissions": [
@@ -18,7 +18,7 @@
     ],
 
     "background": {
-	"scripts": ["jquery.js", "api.js", "sobnik.js"]
+	"scripts": ["jquery.js", "jquery.cookie.js", "api.js", "sobnik.js"]
     },
     
     "content_scripts": [
@@ -26,5 +26,14 @@
 	    "matches": ["http://www.avito.ru/*", "https://www.avito.ru/*"],
 	    "js": ["jquery.js", "api.js", "avito.js"]
 	}
-    ]
+    ],
+
+    "page_action": {
+        "default_icon": {
+            "19": "images/icon_19.png",
+            "38": "images/icon_38.png"
+        },
+        "default_title": "Sobnik",
+        "default_popup": "popup.html"
+    }
 }

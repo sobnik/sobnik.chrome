@@ -29,11 +29,13 @@
     // needs to stay in closure to be used by 'conv' methods below
     var sob = sobnikApi ();
 
+    var types = "kvartiry|nedvizhimost|komnaty|doma_dachi_kottedzhi|zemelnye_uchastki|garazhi_i_mashinomesta|kommercheskaya_nedvizhimost";
+
     var board = {
 	name: "avito.ru",
 
 	urls: [
-	    "http://www.avito.ru/[^/]+/kvartiry/.*_[\\d]+$"
+	    "http://www.avito.ru/[^/]+/("+types+")/.*_[\\d]+$",
 	],
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
@@ -54,12 +56,18 @@
 	},
 
 	list: {
+	    // the row in the list
 	    rowSelector: "div.b-catalog div.item", 
-	    hrefSelector: "a", 
-	    pattern: ".*kvartiry.*",
 
+	    // container for the link to an ad (relative to rowSelector)
+	    hrefSelector: "a", 
+
+	    // links matching this pattern will be marked in the list
+	    pattern: ".*("+types+").*",
+
+	    // matching urls will be treated as a list of ads 
 	    urls: [
-		"http://www.avito.ru/[^/]+/kvartiry"
+		"http://www.avito.ru/[^/]+/("+types+")"
 	    ],
 
 	    mark: function (row, ad) {

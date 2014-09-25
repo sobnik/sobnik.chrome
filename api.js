@@ -515,11 +515,19 @@ function sobnikApi ()
 	})
     }
 
-    var start = function (board) 
+    function activate () {
+	chrome.runtime.sendMessage (
+	    /* ext_id= */"", 
+	    {type: "activated"}
+	)
+    }
+
+    function start (board) 
     {
 	startParse (board);
 	startMarkList (board);
 	startMarkPage (board);
+	activate ();
     };
 
     var s = {

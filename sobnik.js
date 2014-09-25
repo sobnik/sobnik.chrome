@@ -66,12 +66,37 @@
 	return true;
     };
 
+    function activated (sender, message, reply) {
+	if (sender.tab.incognito)
+	    return;
+
+	$.cookie ("subscribeOffer", "");
+	var decision = $.cookie ("subscribeOffer");
+	var show = !decision || decision.indexOf("done=") == 0;
+	if (!show && decision.indexOf ("later=") == 0)
+	{
+	    var day = 24*60*60*1000; // ms
+	    var decided = Number (decision.substr (6));
+	    show = !decided;
+	    if (!show)
+	    {
+		var elapsed = Date.now () - decided;
+		console.log ("Elapsed "+elapsed);
+		show = elapsed > day;
+	    }
+	}
+	if (show)
+	    chrome.pageAction.show (sender.tab.id);
+	console.log ("activated");
+    };
+
     chrome.runtime.onMessage.addListener (function (message, sender, reply) {
 	if (!message.type)
 	    return;
 
 	var handlers = {
-	    "capture": capture
+	    "capture": capture,
+	    "activated": activated
 	};
 
 	var handler = handlers[message.type];
