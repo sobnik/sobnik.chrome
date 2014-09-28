@@ -176,9 +176,9 @@ function sobnikApi ()
 	var post = function (data) {
 	    console.log (data);
 	    
-	    call ("ads", "POST", data);
-	    
-	    done ();
+	    call ("ads", "POST", data, function () {
+		done ();
+	    });
 	};
 
 	if (board.capture)
@@ -255,7 +255,7 @@ function sobnikApi ()
 	}
     }
 
-    var lastMarkList = [];
+    var lastMarkList = {};
     var markListDraw = function (board, map, ads)
     {
 //	console.log ("Removing...");
@@ -267,13 +267,16 @@ function sobnikApi ()
 	for (var i = 0; i < ads.length; i++)
 	{
 	    var a = ads[i];
-	    var row = map[a.AdId];
+	    if (lastMarkList[a.AdId])
+		$(lastMarkList[a.AdId]).remove ();
+
+	    var row = map[a.AdId].row;
 //	    console.log (row);
 	    if (!row)
 		continue;
 
 	    var mark = board.list.mark (row, a);
-	    lastMarkList.push (mark);	    
+	    lastMarkList[a.AdId] = mark;
 	    delete map[a.AdId];
 	}
     }
@@ -319,14 +322,22 @@ function sobnikApi ()
 
 	    var id = board.url2id (url);
 	    console.assert (id, "Bad ad id "+url);
-	    map[id] = row;
+	    map[id] = {row: row, url: url};
 	});
 
 	return map;
     }
+
+    function rdelay (from, till)
+    {
+	var ms = 1000;
+	if (!till)
+	    return from * ms;
+	return (Math.random () * (till - from) + from) * ms;
+    }
     
     // randomize timer to avoid storms
-    var waitSobnikMinRetry = (Math.random () + 1) * 1000; // 1-2 secs
+    var waitSobnikMinRetry = rdelay (1, 2);
     var waitSobnikRetry = waitSobnikMinRetry;
     var waitSobnik = function (id, callback, errback)
     {
@@ -355,21 +366,24 @@ function sobnikApi ()
 	    call ("result", "POST", request, /* callback= */null, {
 		200: success,
 		204: backoff,
-		400: errback,
+		404: errback,
 	    }, backoff);
 	}
 
 	later (waitSobnikRetry, tryWait);
     }
 
-    var startSobnik = function (ids, options, dataCallback, retryCallback)
+    var startSobnik = function (ids, urls, options, dataCallback, retryCallback)
     {
 	var request = {AdIds: ids, Async: true};
+	if (urls)
+	    request.Urls = urls;
 	var errback = function () 
 	{
 	    // backoff exponentially on error
 	    options.retry *= 2;
-	    later (options.retry, retryCallback);
+	    if (retryCallback)
+		later (options.retry, retryCallback);
 	}
 
 	call ("sobnik", "POST", request, function (data) {
@@ -385,7 +399,8 @@ function sobnikApi ()
 		// process sobnik data
 		dataCallback (urls);
 
-		later (options.retry, retryCallback);
+		if (retryCallback)
+		    later (options.retry, retryCallback);
 	    }, errback);
 
 	}, /* statbacks= */null, errback);
@@ -393,29 +408,45 @@ function sobnikApi ()
     
     var markList = function (board)
     {
+	var minRetry = rdelay (20, 30);
 	var options = {
-	    minRetry: (Math.random () * 10 + 20) * 1000 // 20-30 sec
+	    retry: minRetry
 	};
-	options.retry = options.minRetry;
+	var known = {};
 
 	var tryMark = function () 
 	{
 	    var map = gatherList (board);
 //	    console.log (map);
 	    var ids = [];
+	    var urls = [];
 	    for (var id in map)
+	    {
+		if (known[id])
+		    continue;
+
 		ids.push (id);
+		urls.push (map[id].url);
+	    }
+	    console.log ("Sobnik "+ids.length);
 
 	    if (ids.length == 0)
 		return;
 
-	    startSobnik (ids, options, function (data) {
+	    startSobnik (ids, urls, options, function (ads) {
+
+		// remember what we've got
+		for (var i = 0; i < ads.length; i++)
+		{
+		    var a = ads[i];
+		    known[a.AdId] = a;
+		}
 
 		// draw
-		markListDraw (board, map, data);
+		markListDraw (board, map, ads);
 
 		// reset timer
-		options.retry = options.minRetry;
+		options.retry = minRetry;
 
 	    }, tryMark);
 
@@ -427,23 +458,23 @@ function sobnikApi ()
     var markPage = function (board)
     {
 	var options = {
-	    minRetry: (Math.random () * 3 + 7) * 1000 // 7-10 sec
+	    retry: rdelay (7, 10)
 	};
-	options.retry = options.minRetry;
 
 	var tryMark = function () 
 	{
 	    var id = board.url2id (location.href);
 	    console.assert (id, "Bad ad id "+location.href);
 
-	    startSobnik ([id], options, function (data) {
+	    // no urls provided as this page should parse the ad itself
+	    startSobnik ([id], /* urls= */null, options, function (data) {
 
 		// draw
 		markPageDraw (board, data);
 
 		// it get's less and less likely that any changes will
 		// be shown by server, so lets backoff so that 
-		// open tabs do not create constant traffic
+		// open tabs do not create constant useless traffic
 		options.retry *= 1.3;
 	    }, tryMark);
 	}
@@ -464,7 +495,7 @@ function sobnikApi ()
 
     var startParse = function (board)
     {
-	later ((Math.random () * 6 + 2) * 1000, function () {
+	later (rdelay (2, 8), function () {
 	    var loc = location.href;
 	    // if current page matches pattern - start sobnik
 	    for (var i = 0; i < board.urls.length; i++)
