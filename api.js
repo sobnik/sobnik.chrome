@@ -270,11 +270,10 @@ function sobnikApi ()
 	    if (lastMarkList[a.AdId])
 		$(lastMarkList[a.AdId]).remove ();
 
-	    var row = map[a.AdId].row;
-//	    console.log (row);
-	    if (!row)
+	    if (!map[a.AdId])
 		continue;
 
+	    var row = map[a.AdId].row;
 	    var mark = board.list.mark (row, a);
 	    lastMarkList[a.AdId] = mark;
 	    delete map[a.AdId];
@@ -500,6 +499,7 @@ function sobnikApi ()
 	    // if current page matches pattern - start sobnik
 	    for (var i = 0; i < board.urls.length; i++)
 	    {
+		console.log ("Match "+loc+" against "+board.urls[i]);
 		if (loc.match(board.urls[i]) != null)
 		{
 		    console.log ("Parsing "+loc);
@@ -507,6 +507,7 @@ function sobnikApi ()
 		    return;
 		}
 	    }
+	    console.log ("Not parsing");
 	})
     }
 
@@ -525,6 +526,7 @@ function sobnikApi ()
 		    return;
 		}
 	    }
+	    console.log ("Not marking");
 	})
     }
 
@@ -538,11 +540,12 @@ function sobnikApi ()
 	    {
 		if (loc.match(board.urls[i]) != null)
 		{
-		    console.log ("Marking "+loc);
+		    console.log ("Marking page "+loc);
 		    markPage (board);
 		    return;
 		}
 	    }
+	    console.log ("Not marking page");
 	})
     }
 
@@ -561,13 +564,52 @@ function sobnikApi ()
 	activate ();
     };
 
+    function test ()
+    {
+	// FIXME remove this!
+	var minDelay = rdelay (50, 70);
+	var delay = minDelay;
+
+	var backoff = function () {
+	    delay *= 2;
+	    getJob ();
+	}
+
+	var speedup = function () {
+	    delay -= 1000;
+	    if (delay < minDelay)
+		delay = minDelay;
+	    getJob ();
+	}
+
+	var getJob = function () { 
+	    later (delay, function () {
+		call ("crawler/job", "GET", {}, /* callback */null, {
+		    200: function (data) {
+			console.log (data);
+			speedup ();
+		    },
+		    204: function () {
+			console.log ("no jobs");
+			backoff ();
+		    }
+		}, function () {
+		    console.log ("error");
+		    backoff ();
+		});
+	    });
+	};
+
+	getJob ();
+    };
+
     var s = {
 	call: call,
 	dts: dts,
 	dateFmt: dateFmt,
-	gatherFields: gatherFields,
 	marker: marker,
-	start: start
+	start: start,
+	test: test,
     };
 
     return s;

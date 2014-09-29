@@ -35,7 +35,7 @@
 	name: "avito.ru",
 
 	urls: [
-	    "http://www.avito.ru/[^/]+/("+types+")/.*_[\\d]+$",
+	    "http[s]?://www.avito.ru/[^/]+/("+types+")/.*_[\\d]+$",
 	],
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
@@ -67,7 +67,7 @@
 
 	    // matching urls will be treated as a list of ads 
 	    urls: [
-		"http://www.avito.ru/[^/]+/("+types+")"
+		"http[s]?://www.avito.ru/[^/]+/("+types+")"
 	    ],
 
 	    mark: function (row, ad) {

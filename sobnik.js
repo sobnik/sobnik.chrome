@@ -104,4 +104,7 @@
 	    return handler (sender, message, reply);
     });
 
+    var sobnik = sobnikApi ()
+    sobnik.test ();
+
 } ());
