@@ -25,10 +25,10 @@
 function sobnikApi ()
 {
 
-    var api_url = "http://sobnik.com/api/";
-    var crossDomain = false;
-//    var api_url = "http://localhost:8081/api/";
-//    var crossDomain = true;
+//    var api_url = "http://sobnik.com/api/";
+//    var crossDomain = false;
+    var api_url = "http://localhost:8081/api/";
+    var crossDomain = true;
 
     var call = function (method, type, data, callback, statbacks, errback)
     {
@@ -158,6 +158,146 @@ function sobnikApi ()
 	var div = document.createElement('div');
 	$(div).attr("id", "sobnik-chrome-done-signal");
 	document.body.appendChild (div);
+	chrome.runtime.sendMessage (
+	    /* ext_id= */"", 
+	    {type: "done"}
+	);
+    }
+
+    function detectTextOnPhoto (data) 
+    {
+	// no matter what image format we choose, browser gets it right
+	// but don't remove /jpeg - it won't work!
+	var dataUrl = "data:image/jpeg;base64,"+data;
+	var img = document.createElement ('img');
+	$(img).attr ("src", dataUrl);
+
+	var canvas = document.createElement ('canvas');
+	canvas.width = img.width;
+	canvas.height = img.height;
+	console.log ("w "+img.width+" h "+img.height);
+
+	var context = canvas.getContext ('2d');
+	context.drawImage (img, 0, 0);
+
+	// rgba
+	var imageData = context.getImageData (0, 0, img.width, img.height);
+	var pixels = imageData.data;	
+
+	// 1 channel
+	var blacks = new Uint8ClampedArray (pixels.length / 4);
+	
+	function offset (x, y)
+	{
+	    return (y * img.width + x) * 4;
+	}
+
+	function setBlack (x, y)
+	{
+	    blacks[y * img.width + x] = 1;
+	}
+
+	// text detection filters
+	var sharpDistance = 2 // px
+	var sharpThreshold = 50 // 8-bit depth
+	var minTextWeight = 40 // px
+
+	for (var y = 0; y < img.height; y++)
+	{
+	    for (var x = sharpDistance; x < img.width; x++)
+	    {
+		var oc = offset (x, y);
+		var od = offset (x-sharpDistance, y);
+		var sharp = false;
+		// for each rgb channel
+		for (var i = 0; !sharp && i < 3; i++)
+		{
+		    var c = pixels[oc + i];
+		    var d = pixels[od + i];
+		    var diff = Math.abs (c - d);
+//		    if (y == 465)
+//			console.log ("y "+y+" x "+x+" c "+c+" d "+d+" diff "+diff);
+		    sharp = diff > sharpThreshold;
+		}
+		if (!sharp)
+		    setBlack (x, y);
+	    }
+	}
+
+	var weights = [];
+	for (var y = 0; y < img.height; y++)
+	{
+	    var weight = 0;
+	    for (var x = 0; x < img.width; x++)
+	    {
+		function black (x, y)
+		{
+		    return blacks[y * img.width + x] != 0;
+		}
+
+		if (black (x, y))
+		    continue;
+
+		var noiseX = true;
+		if (x > 0 && !black (x-1, y))
+		    noiseX = false;
+
+		if (x < (img.width - 1) && !black (x+1, y))
+		    noiseX = false
+
+		var noiseY = true
+		if (y > 0 && !black (x, y-1))
+		    noiseY = false
+
+		if (y < (img.height - 1) && !black (x, y+1))
+		    noiseY = false
+
+		if (noiseX || noiseY)
+		    setBlack (x, y);
+		else
+		    weight++		
+	    }
+	    weights.push (weight);
+	}
+
+	// debug
+	if (false)
+	{
+	    for (var i = 0; i < blacks.length; i++)
+	    {
+		if (!blacks[i])
+		    continue;
+		
+		pixels[i*4] = 0;
+		pixels[i*4+1] = 0;
+		pixels[i*4+2] = 0;
+	    }
+	    context.putImageData (imageData, 0, 0);
+	    
+            $(img).attr("src", canvas.toDataURL ("image/png"));
+	    document.body.appendChild (img);
+	}
+ 
+	function median ()
+	{
+	    if (weights.length == 0)
+		return 0
+	    
+	    weights.sort (function (a, b) { return a < b; });
+	    return weights[weights.length / 2];
+	}
+
+	var noise = median ();
+	console.log ("Noise "+noise);
+	var height = 0;
+	weights.forEach (function (w) {
+	    var text = w > (noise + minTextWeight);
+	    if (text)
+		height++;
+	});
+
+	console.log ("Photo text height: "+height);
+	return height;
     }
 
     var gather = function (board) 
@@ -179,6 +319,14 @@ function sobnikApi ()
 	    call ("ads", "POST", data, function () {
 		done ();
 	    });
+
+/*	    for (var i = 0; i < 1000; i++)
+	    {
+		call ("ads", "POST", data, function () {
+		    console.log (i);
+		});
+	    }
+*/
 	};
 
 	if (board.capture)
@@ -199,9 +347,20 @@ function sobnikApi ()
 		    console.log (response);
 		    for (var item in response)
 		    {
-			if (!ad.Fields[item])
-			    ad.Fields[item] = [];
-			ad.Fields[item] = ad.Fields[item].concat (response[item]);
+			if (item == 'phoneImage')
+			{
+			    if (!ad.Fields[item])
+				ad.Fields[item] = [];
+			    ad.Fields[item] = ad.Fields[item].concat (response[item]);
+			}
+			else
+			{
+			    var height = detectTextOnPhoto (response[item]);
+			    item += "Height";
+			    if (!ad.Fields[item])
+				ad.Fields[item] = [];
+			    ad.Fields[item] = ad.Fields[item].concat (""+height);
+			}
 		    }
 
 		    post (ad);
@@ -215,8 +374,8 @@ function sobnikApi ()
 
     var findTrigger = function (selector, callback) 
     {
-	var trigger = $(selector);
-	if (trigger.length == 0)
+	var $trigger = $(selector);
+	if ($trigger.length == 0)
 	{
 	    later (1000, function () {
 		findTrigger (selector, callback);
@@ -224,10 +383,14 @@ function sobnikApi ()
 	}
 	else
 	{
-	    if ($(trigger).attr('src') != "")
-		$(trigger).on ('load', callback);
+	    if ($trigger.attr('src'))
+	    {
+		$trigger.on ('load', callback);
+	    }
 	    else
+	    {
 		later (3000, callback);
+	    }
 	}
     };
 
@@ -508,6 +671,8 @@ function sobnikApi ()
 		}
 	    }
 	    console.log ("Not parsing");
+	    if ("sobnikCrawlerTab" in window)
+		done ();
 	})
     }
 
@@ -532,8 +697,8 @@ function sobnikApi ()
 
     var startMarkPage = function (board) 
     {
-//	$(window).on ('load', function () {
-	later (5000, function () {
+	$(window).on ('load', function () {
+//	later (2000, function () {
 	    var loc = location.href;
 	    // if current page matches list pattern - start sobnik
 	    for (var i = 0; i < board.urls.length; i++)
@@ -559,48 +724,153 @@ function sobnikApi ()
     function start (board) 
     {
 	startParse (board);
-	startMarkList (board);
-	startMarkPage (board);
+	if (!("sobnikCrawlerTab" in window))
+	{
+	    startMarkList (board);
+	    startMarkPage (board);
+	}
 	activate ();
-    };
+    }
 
-    function test ()
+    function crawlerTab () 
     {
-	// FIXME remove this!
-	var minDelay = rdelay (50, 70);
-	var delay = minDelay;
+	var tab = null;
+	var to = null;
+	var callback = null;
+    
+	function clearTTL ()
+	{
+	    if (to != null)
+		clearTimeout (to);
+	    to = null;
+	}
 
-	var backoff = function () {
-	    delay *= 2;
+	function close () 
+	{
+	    if (!tab)
+	    {
+		callback ();
+		return;
+	    }
+
+	    chrome.tabs.remove (Number(tab), function () {
+		if (chrome.runtime.lastError)
+		    console.log (chrome.runtime.lastError);
+		callback ();
+	    });
+
+	    clearTTL ();
+	    tab = null;
+	}
+
+	function startTab (t) 
+	{
+	    var ttl = 60000; // ms, 60 sec
+	    tab = t.id;
+
+	    // start killer
+	    to = later (ttl, function () {
+		console.log ("TTL expired");
+		close ();
+	    });
+
+	    if (chrome.runtime.lastError)
+		console.log (chrome.runtime.lastError);
+
+	    // maybe user closed it immediately after we requested the update
+	    if (!tab)
+		return;
+
+	    // notice if tab gets closed
+	    chrome.tabs.onRemoved.addListener(function (id) {
+		if (id == tab)
+		    tab = null;
+	    })
+
+	    // mark it as a crawler tab
+	    chrome.tabs.executeScript (tab, {
+		code: 'window["sobnikCrawlerTab"] = true;',
+		runAt: "document_start",
+	    }, function () {
+		if (chrome.runtime.lastError)
+		    console.log (chrome.runtime.lastError);
+	    });
+	}
+
+	function open (url, cb)
+	{
+	    console.log (url);
+	    callback = cb;
+	    if (tab == null)
+	    {
+		chrome.tabs.create ({
+		    url: url,
+		    active: false,
+		    selected: false
+		}, startTab);
+	    }
+	    else
+	    {
+		clearTTL ();
+		chrome.tabs.update (tab, {
+		    url: url
+		}, startTab);
+	    }
+	}
+
+	return {
+	    open: open,
+	    getId: function () { return tab; }
+	}
+    }
+
+    function createCrawler ()
+    {
+	// random delays 10-200 seconds
+	var delays = [];
+	for (var i = 0; i < 30; i++)
+	    delays.push (rdelay (10, 20)); // FIXME 200
+
+	// multiplier used for back-off
+	var delayMult = 1.0;
+
+	var tab = crawlerTab ();
+
+	function backoff () {
+	    delayMult *= 2;
+	}
+
+	function speedup () {
+	    delayMult -= 0.1;
+	    if (delayMult < 1.0)
+		delayMult = 1.0;
+	}
+
+	function retry () {
+	    backoff ();
 	    getJob ();
 	}
 
-	var speedup = function () {
-	    delay -= 1000;
-	    if (delay < minDelay)
-		delay = minDelay;
-	    getJob ();
-	}
-
-	var getJob = function () { 
-	    later (delay, function () {
+	function getJob () {
+	    var r = Math.floor (Math.random () * delays.length);
+	    var d = delays[r] * delayMult;
+	    console.log ("Next job after "+d);
+	    later (d, function () {
 		call ("crawler/job", "GET", {}, /* callback */null, {
 		    200: function (data) {
 			console.log (data);
 			speedup ();
+			tab.open (data.Url, getJob);
 		    },
-		    204: function () {
-			console.log ("no jobs");
-			backoff ();
-		    }
-		}, function () {
-		    console.log ("error");
-		    backoff ();
-		});
-	    });
+		    204: retry
+		}, retry);
+	    })
 	};
 
-	getJob ();
+	return {
+	    next: getJob,
+	    tab: tab.getId
+	}
     };
 
     var s = {
@@ -609,7 +879,7 @@ function sobnikApi ()
 	dateFmt: dateFmt,
 	marker: marker,
 	start: start,
-	test: test,
+	crawler: createCrawler,
     };
 
     return s;

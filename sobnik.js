@@ -43,13 +43,10 @@
 
 		console.log (pattern);
 		var r = data.match (new RegExp (pattern));
-		console.log (r);
-
 		if (r && r.length > 1)
 		    result[item] = r[1];
 	    }
 
-	    console.log (result);
 	    reply (result);
 	};
 
@@ -90,21 +87,32 @@
 	console.log ("activated");
     };
 
+    var crawler = sobnikApi ().crawler ()
+    // start it
+    crawler.next ();
+
+    function done (sender)
+    {
+	if (sender.tab.id == crawler.tab ())
+	{
+	    console.log ("Crawler tab done");
+	    crawler.next ();
+	}
+    }
+
     chrome.runtime.onMessage.addListener (function (message, sender, reply) {
 	if (!message.type)
 	    return;
 
 	var handlers = {
 	    "capture": capture,
-	    "activated": activated
+	    "activated": activated,
+	    "done": done
 	};
 
 	var handler = handlers[message.type];
 	if (handler)
 	    return handler (sender, message, reply);
     });
-
-    var sobnik = sobnikApi ()
-    sobnik.test ();
 
 } ());

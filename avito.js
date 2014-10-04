@@ -35,7 +35,7 @@
 	name: "avito.ru",
 
 	urls: [
-	    "http[s]?://www.avito.ru/[^/]+/("+types+")/.*_[\\d]+$",
+	    "http[s]?://www.avito.ru/[^/]+/("+types+")/.*_[\\d]+($|#.*)",
 	],
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
@@ -105,7 +105,7 @@
 	},
 
 	url2id: function (url) {
-	    var id = url.match (/\d+$/);
+	    var id = url.match (/\d+($|#.*)/);
 	    if (!id)
 		return "";
 	    return "avito:"+id;
