@@ -25,10 +25,10 @@
 function sobnikApi ()
 {
 
-//    var api_url = "http://sobnik.com/api/";
-//    var crossDomain = false;
-    var api_url = "http://localhost:8081/api/";
-    var crossDomain = true;
+    var api_url = "http://sobnik.com/api/";
+    var crossDomain = false;
+//    var api_url = "http://localhost:8081/api/";
+//    var crossDomain = true;
 
     var call = function (method, type, data, callback, statbacks, errback)
     {
@@ -355,6 +355,11 @@ function sobnikApi ()
 			}
 			else
 			{
+			    // FIXME remove
+			    if (!ad.Fields[item])
+				ad.Fields[item] = [];
+			    ad.Fields[item] = ad.Fields[item].concat (response[item]);
+
 			    var height = detectTextOnPhoto (response[item]);
 			    item += "Height";
 			    if (!ad.Fields[item])
@@ -476,15 +481,18 @@ function sobnikApi ()
 	var map = {};
 	var regexp = board.list.pattern ? new RegExp(board.list.pattern) : null;
 	rows.each (function(i, row) {
-	    var url = $(row).find (board.list.hrefSelector).attr("href");
-	    if (regexp && !regexp.test(url))
-		return;
-	    if (url.indexOf (location.hostname) < 0)
-		url = location.origin + url;
-
-	    var id = board.url2id (url);
-	    console.assert (id, "Bad ad id "+url);
-	    map[id] = {row: row, url: url};
+	    $(row).find (board.list.hrefSelector).each (function (i, a) {
+		var url = $(a).attr("href");
+//		console.log ("Url "+url+" rx "+regexp);
+		if (regexp && !regexp.test(url))
+		    return;
+		if (url.indexOf (location.hostname) < 0)
+		    url = location.origin + url;
+		
+		var id = board.url2id (url);
+		console.assert (id, "Bad ad id "+url);
+		map[id] = {row: row, url: url};
+	    });
 	});
 
 	return map;
@@ -548,6 +556,7 @@ function sobnikApi ()
 		later (options.retry, retryCallback);
 	}
 
+	// FIXME add 204 handling (backoff)
 	call ("sobnik", "POST", request, function (data) {
 	    console.log (data);
 	    if (!data || !data.Id)

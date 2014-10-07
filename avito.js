@@ -57,7 +57,7 @@
 
 	list: {
 	    // the row in the list
-	    rowSelector: "div.b-catalog div.item", 
+	    rowSelector: "div.catalog div.item", 
 
 	    // container for the link to an ad (relative to rowSelector)
 	    hrefSelector: "a", 

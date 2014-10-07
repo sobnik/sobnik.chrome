@@ -89,7 +89,8 @@
 
     var crawler = sobnikApi ().crawler ()
     // start it
-    crawler.next ();
+    // FIXME off until server support
+    // crawler.next ();
 
     function done (sender)
     {
