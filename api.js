@@ -25,10 +25,10 @@
 function sobnikApi ()
 {
 
-    var api_url = "http://sobnik.com/api/";
-    var crossDomain = false;
-//    var api_url = "http://localhost:8081/api/";
-//    var crossDomain = true;
+//    var api_url = "http://sobnik.com/api/";
+//    var crossDomain = false;
+    var api_url = "http://localhost:8081/api/";
+    var crossDomain = true;
 
     var call = function (method, type, data, callback, statbacks, errback)
     {
@@ -457,6 +457,9 @@ function sobnikApi ()
 	    $(lastMarkPage[i]).remove ();
 	lastMarkPage = [];
 
+	if (ads == null)
+	    return
+
 	var id = board.url2id (location.href);
 	console.assert (id, "Bad ad id "+location.href);
 	for (var i = 0; i < ads.length; i++)
@@ -548,7 +551,8 @@ function sobnikApi ()
 	var request = {AdIds: ids, Async: true};
 	if (urls)
 	    request.Urls = urls;
-	var errback = function () 
+
+	function errback () 
 	{
 	    // backoff exponentially on error
 	    options.retry *= 2;
@@ -556,25 +560,29 @@ function sobnikApi ()
 		later (options.retry, retryCallback);
 	}
 
-	// FIXME add 204 handling (backoff)
-	call ("sobnik", "POST", request, function (data) {
-	    console.log (data);
-	    if (!data || !data.Id)
-	    {
-		errback ();
-		return
-	    }
+	function ok (urls) {
+	    // process sobnik data
+	    dataCallback (urls);
+		    
+	    if (retryCallback)
+		later (options.retry, retryCallback);
+	}
 
-	    // wait for result
-	    waitSobnik (data.Id, function (urls) {
-		// process sobnik data
-		dataCallback (urls);
+	call ("sobnik", "POST", request, /* callback= */null,{
+	    200: ok,
+	    201: function (data) {
+		console.log (data);
+		if (!data || !data.Id)
+		{
+		    errback ();
+		    return
+		}
 
-		if (retryCallback)
-		    later (options.retry, retryCallback);
-	    }, errback);
-
-	}, /* statbacks= */null, errback);
+		// wait for result
+		waitSobnik (data.Id, ok, errback);
+	    },
+	    204: errback
+	}, errback);
     }
     
     var markList = function (board)
@@ -593,8 +601,9 @@ function sobnikApi ()
 	    var urls = [];
 	    for (var id in map)
 	    {
-		if (known[id])
-		    continue;
+		// FIXME removed this, as it introduces a ton of shit!
+		//if (known[id])
+		// continue;
 
 		ids.push (id);
 		urls.push (map[id].url);
@@ -605,6 +614,12 @@ function sobnikApi ()
 		return;
 
 	    startSobnik (ids, urls, options, function (ads) {
+		// reset timer
+		// FIXME back it off, as changes are much less likely later on
+		options.retry = minRetry;
+
+		if (ads == null)
+		    return
 
 		// remember what we've got
 		for (var i = 0; i < ads.length; i++)
@@ -615,10 +630,6 @@ function sobnikApi ()
 
 		// draw
 		markListDraw (board, map, ads);
-
-		// reset timer
-		options.retry = minRetry;
-
 	    }, tryMark);
 
 	}
