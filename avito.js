@@ -108,7 +108,7 @@
 	    var id = url.match (/\d+($|#.*)/);
 	    if (!id)
 		return "";
-	    return "avito:"+id;
+	    return "avito:"+id[0];
 	},
 
 	fields: {

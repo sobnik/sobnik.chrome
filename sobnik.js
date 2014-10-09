@@ -26,7 +26,7 @@
 
     function capture (sender, message, reply) {
 	var parse = function (data) {
-	    console.log (message.what);
+//	    console.log (message.what);
 
 	    var result = {};
 	    for (var item in message.what) 
@@ -41,7 +41,7 @@
 		var pattern = "Content-Location[^\\n]*"+url
 		    +"[^A-Za-z0-9\\+\\/]*([A-Za-z0-9=\\+\\/\\r\\n]+)";
 
-		console.log (pattern);
+//		console.log (pattern);
 		var r = data.match (new RegExp (pattern));
 		if (r && r.length > 1)
 		    result[item] = r[1];
@@ -84,13 +84,12 @@
 	}
 	if (show)
 	    chrome.pageAction.show (sender.tab.id);
-	console.log ("activated");
+//	console.log ("activated");
     };
 
     var crawler = sobnikApi ().crawler ()
     // start it
-    // FIXME off until server support
-    // crawler.next ();
+    crawler.next ();
 
     function done (sender)
     {
@@ -101,6 +100,18 @@
 	}
     }
 
+    function showSettings ()
+    {
+	chrome.tabs.create ({
+	    url: "settings.html"
+	});	
+    }
+
+    function crawlerOff ()
+    {
+	crawler.close ();
+    }
+
     chrome.runtime.onMessage.addListener (function (message, sender, reply) {
 	if (!message.type)
 	    return;
@@ -108,6 +119,8 @@
 	var handlers = {
 	    "capture": capture,
 	    "activated": activated,
+	    "showSettings": showSettings,
+	    "crawlerOff": crawlerOff,
 	    "done": done
 	};
 

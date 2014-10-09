@@ -355,11 +355,6 @@ function sobnikApi ()
 			}
 			else
 			{
-			    // FIXME remove
-			    if (!ad.Fields[item])
-				ad.Fields[item] = [];
-			    ad.Fields[item] = ad.Fields[item].concat (response[item]);
-
 			    var height = detectTextOnPhoto (response[item]);
 			    item += "Height";
 			    if (!ad.Fields[item])
@@ -426,20 +421,14 @@ function sobnikApi ()
     var lastMarkList = {};
     var markListDraw = function (board, map, ads)
     {
-//	console.log ("Removing...");
-//	console.log (lastMarkList);
-	for (var i = 0; i < lastMarkList.length; i++)
-	    $(lastMarkList[i]).remove ();
-	lastMarkList = [];
-
 	for (var i = 0; i < ads.length; i++)
 	{
 	    var a = ads[i];
-	    if (lastMarkList[a.AdId])
-		$(lastMarkList[a.AdId]).remove ();
-
 	    if (!map[a.AdId])
 		continue;
+
+	    if (lastMarkList[a.AdId])
+		$(lastMarkList[a.AdId]).remove ();
 
 	    var row = map[a.AdId].row;
 	    var mark = board.list.mark (row, a);
@@ -508,130 +497,60 @@ function sobnikApi ()
 	    return from * ms;
 	return (Math.random () * (till - from) + from) * ms;
     }
-    
-    // randomize timer to avoid storms
-    var waitSobnikMinRetry = rdelay (1, 2);
-    var waitSobnikRetry = waitSobnikMinRetry;
-    var waitSobnik = function (id, callback, errback)
+
+    var sobnikDelayMult = 1.0;
+    var startSobnik = function (ads, delay, dataCallback, retryCallback)
     {
-	var request = {TaskId: id};
-
-	var backoff = function () 
+	var request = {Ads: ads};
+	
+	function backoff (mult)
 	{
-	    // backoff exponentially
-	    waitSobnikRetry *= 2;
-	    later (waitSobnikRetry, tryWait);
+	    sobnikDelayMult *= mult;
+	    if (retryCallback)
+		later (delay * sobnikDelayMult, retryCallback);
 	}
-
-	var success = function (data)
-	{
-	    // speed-up linearly
-	    waitSobnikRetry -= 1000;
-	    if (waitSobnikRetry < waitSobnikMinRetry)
-		waitSobnikRetry = waitSobnikMinRetry;
-
-	    // process results
-	    callback (data);
-	}
-
-	var tryWait = function () 
-	{
-	    call ("result", "POST", request, /* callback= */null, {
-		200: success,
-		204: backoff,
-		404: errback,
-	    }, backoff);
-	}
-
-	later (waitSobnikRetry, tryWait);
-    }
-
-    var startSobnik = function (ids, urls, options, dataCallback, retryCallback)
-    {
-	var request = {AdIds: ids, Async: true};
-	if (urls)
-	    request.Urls = urls;
 
 	function errback () 
 	{
-	    // backoff exponentially on error
-	    options.retry *= 2;
-	    if (retryCallback)
-		later (options.retry, retryCallback);
+	    // backoff faster on error
+	    backoff (2);
 	}
 
-	function ok (urls) {
-	    // process sobnik data
-	    dataCallback (urls);
-		    
-	    if (retryCallback)
-		later (options.retry, retryCallback);
-	}
+	call ("sobnik", "POST", request, /* callback= */null, {
+	    200: function (data) {
+		if (data && data.Ads)
+		    dataCallback (data.Ads);
 
-	call ("sobnik", "POST", request, /* callback= */null,{
-	    200: ok,
-	    201: function (data) {
-		console.log (data);
-		if (!data || !data.Id)
-		{
-		    errback ();
-		    return
-		}
-
-		// wait for result
-		waitSobnik (data.Id, ok, errback);
+		// backoff slowly
+		backoff (1.1);
 	    },
-	    204: errback
+	    204: errback,
 	}, errback);
     }
     
     var markList = function (board)
     {
-	var minRetry = rdelay (20, 30);
-	var options = {
-	    retry: minRetry
-	};
-	var known = {};
+	// min delay
+	var delay = rdelay (10, 20)
 
 	var tryMark = function () 
 	{
 	    var map = gatherList (board);
-//	    console.log (map);
-	    var ids = [];
-	    var urls = [];
+	    var ads = [];
 	    for (var id in map)
-	    {
-		// FIXME removed this, as it introduces a ton of shit!
-		//if (known[id])
-		// continue;
+		ads.push ({AdId: id, Url: map[id].url});
 
-		ids.push (id);
-		urls.push (map[id].url);
-	    }
-	    console.log ("Sobnik "+ids.length);
+	    console.log ("Sobnik "+ads.length);
 
-	    if (ids.length == 0)
+	    if (ads.length == 0)
 		return;
 
-	    startSobnik (ids, urls, options, function (ads) {
-		// reset timer
-		// FIXME back it off, as changes are much less likely later on
-		options.retry = minRetry;
-
-		if (ads == null)
-		    return
-
-		// remember what we've got
-		for (var i = 0; i < ads.length; i++)
-		{
-		    var a = ads[i];
-		    known[a.AdId] = a;
-		}
+	    startSobnik (ads, delay, function (ads) {
 
 		// draw
 		markListDraw (board, map, ads);
-	    }, tryMark);
 
+	    }, tryMark);
 	}
 
 	tryMark ();
@@ -639,25 +558,19 @@ function sobnikApi ()
 
     var markPage = function (board)
     {
-	var options = {
-	    retry: rdelay (7, 10)
-	};
+	var delay = rdelay (2, 4);
 
 	var tryMark = function () 
 	{
 	    var id = board.url2id (location.href);
 	    console.assert (id, "Bad ad id "+location.href);
 
-	    // no urls provided as this page should parse the ad itself
-	    startSobnik ([id], /* urls= */null, options, function (data) {
+	    var ads = [{AdId: id, Url: location.href}];
+	    startSobnik (ads, delay, function (data) {
 
 		// draw
 		markPageDraw (board, data);
 
-		// it get's less and less likely that any changes will
-		// be shown by server, so lets backoff so that 
-		// open tabs do not create constant useless traffic
-		options.retry *= 1.3;
 	    }, tryMark);
 	}
 
@@ -743,8 +656,11 @@ function sobnikApi ()
 
     function start (board) 
     {
-	startParse (board);
-	if (!("sobnikCrawlerTab" in window))
+	if ("sobnikCrawlerTab" in window)
+	{
+	    startParse (board);
+	}
+	else
 	{
 	    startMarkList (board);
 	    startMarkPage (board);
@@ -809,7 +725,7 @@ function sobnikApi ()
 
 	    // mark it as a crawler tab
 	    chrome.tabs.executeScript (tab, {
-		code: 'window["sobnikCrawlerTab"] = true;',
+		file: "crawler.js",
 		runAt: "document_start",
 	    }, function () {
 		if (chrome.runtime.lastError)
@@ -840,16 +756,17 @@ function sobnikApi ()
 
 	return {
 	    open: open,
-	    getId: function () { return tab; }
+	    close: function () { close (); },
+	    getId: function () { return tab; },
 	}
     }
 
     function createCrawler ()
     {
-	// random delays 10-200 seconds
+	// random delays 30-200 seconds
 	var delays = [];
 	for (var i = 0; i < 30; i++)
-	    delays.push (rdelay (10, 20)); // FIXME 200
+	    delays.push (rdelay (30, 200));
 
 	// multiplier used for back-off
 	var delayMult = 1.0;
@@ -875,21 +792,37 @@ function sobnikApi ()
 	    var r = Math.floor (Math.random () * delays.length);
 	    var d = delays[r] * delayMult;
 	    console.log ("Next job after "+d);
-	    later (d, function () {
-		call ("crawler/job", "GET", {}, /* callback */null, {
-		    200: function (data) {
-			console.log (data);
-			speedup ();
-			tab.open (data.Url, getJob);
-		    },
-		    204: retry
-		}, retry);
-	    })
+
+	    function get ()
+	    {
+		chrome.storage.local.get ("crawler", function (items) {
+		    if (items.crawler == "off")
+		    {
+			// retry later after the same delay
+			getJob ();
+		    }
+		    else
+		    {
+			// get the job
+			call ("crawler/job", "POST", "", /* callback */null, {
+			    200: function (data) {
+//				console.log (data);
+				speedup ();
+				tab.open (data.Url, getJob);
+			    },
+			    204: retry
+			});
+		    }
+		})
+	    }
+
+	    later (d, get, retry);
 	};
 
 	return {
 	    next: getJob,
-	    tab: tab.getId
+	    tab: tab.getId,
+	    close: tab.close,
 	}
     };
 
