@@ -25,10 +25,10 @@
 function sobnikApi ()
 {
 
-//    var api_url = "http://sobnik.com/api/";
-//    var crossDomain = false;
-    var api_url = "http://localhost:8081/api/";
-    var crossDomain = true;
+    var api_url = "http://sobnik.com/api/";
+    var crossDomain = false;
+//    var api_url = "http://localhost:8081/api/";
+//    var crossDomain = true;
 
     var call = function (method, type, data, callback, statbacks, errback)
     {
@@ -531,7 +531,7 @@ function sobnikApi ()
     var markList = function (board)
     {
 	// min delay
-	var delay = rdelay (10, 20)
+	var delay = rdelay (5, 10)
 
 	var tryMark = function () 
 	{
@@ -558,7 +558,7 @@ function sobnikApi ()
 
     var markPage = function (board)
     {
-	var delay = rdelay (2, 4);
+	var delay = rdelay (1, 2);
 
 	var tryMark = function () 
 	{
@@ -763,10 +763,10 @@ function sobnikApi ()
 
     function createCrawler ()
     {
-	// random delays 30-200 seconds
+	// random delays 60-200 seconds
 	var delays = [];
 	for (var i = 0; i < 30; i++)
-	    delays.push (rdelay (30, 200));
+	    delays.push (rdelay (60, 200));
 
 	// multiplier used for back-off
 	var delayMult = 1.0;

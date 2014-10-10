@@ -11,13 +11,14 @@
 
     "permissions": [
 	"http://sobnik.com/*",
-	"http://localhost:8081/*",
 	"http://www.avito.ru/*",
 	"https://www.avito.ru/*",
 	"tabs",
         "pageCapture",
 	"storage"
     ],
+
+    "options_page": "settings.html",
 
     "background": {
 	"scripts": ["jquery.js", "jquery.cookie.js", "api.js", "sobnik.js"]
@@ -38,4 +39,5 @@
         "default_title": "Sobnik",
         "default_popup": "popup.html"
     }
+
 }
