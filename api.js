@@ -261,7 +261,7 @@ function sobnikApi ()
 	}
 
 	// debug
-	if (true)
+	if (false)
 	{
 	    for (var i = 0; i < blacks.length; i++)
 	    {
@@ -325,12 +325,20 @@ function sobnikApi ()
 
 	ad.Fields = gatherFields (board.fields);
 
-	var post = function (data) {
+	function post (data) 
+	{
 	    console.log (data);
 	    call ("ads", "POST", data, function () {
 		done ();
 	    });
 	};
+
+	function setField (name, value)
+	{
+	    if (!ad.Fields[name])
+		ad.Fields[name] = [];
+	    ad.Fields[name] = ad.Fields[name].concat (""+value);
+	}
 
 	function capture (what, callback) 
 	{
@@ -342,19 +350,16 @@ function sobnikApi ()
 		    console.log (response);
 		    for (var item in response)
 		    {
+			// FIXME work out this special case
 			if (item == 'phoneImage')
 			{
-			    if (!ad.Fields[item])
-				ad.Fields[item] = [];
-			    ad.Fields[item] = ad.Fields[item].concat (response[item]);
+			    setField (item, response[item]);
 			}
 			else
 			{
 			    var height = detectTextOnPhoto (response[item]);
 			    item += "Height";
-			    if (!ad.Fields[item])
-				ad.Fields[item] = [];
-			    ad.Fields[item] = ad.Fields[item].concat (""+height);
+			    setField (item, height);
 			}
 		    }
 
@@ -364,14 +369,6 @@ function sobnikApi ()
 
 	if (board.capture)
 	{
-	    /* 
-	       Алгоритм:
-	       1. Кликнуть на фото.
-	       2. Подождать пока загрузится (как - img.active onload)
-	       3. Выдернуть загруженное фото (как - img.active)
-	       4. Повторить.
-	     */
-
 	    var queue = [];
 	    for (var item in board.capture)
 	    {
