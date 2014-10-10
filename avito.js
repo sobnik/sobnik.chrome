@@ -35,13 +35,14 @@
 	name: "avito.ru",
 
 	urls: [
-	    "http[s]?://www.avito.ru/[^/]+/("+types+")/.*_[\\d]+($|#.*)",
+	    "http[s]?://www.avito.ru/[^/]+/("+types+")/[^\\?]*_[\\d]+($|#.*|\\?*)",
 	],
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
 
 	untrigger: "div.alert p:contains(\"заблокировано\")",
 
+	// FIXME move this to capture stuff
 	clicks: ["span.j-phone-show__insert span.btn__text"],
 
 	capture: {
@@ -50,7 +51,8 @@
 		attr: "src"
 	    },
 	    photoImage: {
-		selector: "td.big-picture div.picture-aligner img",
+		click: "div.gallery-item a.gallery-link img",
+		selector: "td.big-picture div.picture-aligner img.active",
 		attr: "src"
 	    }
 	},
@@ -105,10 +107,12 @@
 	},
 
 	url2id: function (url) {
-	    var id = url.match (/\d+($|#.*)/);
+	    var id = url.match (/[^\?]*_(\d+)($|#.*|\?.*)/);
+//	    console.log ("Url "+url);
+//	    console.log (id);
 	    if (!id)
 		return "";
-	    return "avito:"+id[0];
+	    return "avito:"+id[1];
 	},
 
 	fields: {

@@ -261,7 +261,7 @@ function sobnikApi ()
 	}
 
 	// debug
-	if (false)
+	if (true)
 	{
 	    for (var i = 0; i < blacks.length; i++)
 	    {
@@ -284,7 +284,7 @@ function sobnikApi ()
 		return 0
 	    
 	    weights.sort (function (a, b) { return a < b; });
-	    return weights[weights.length / 2];
+	    return weights[Math.floor (weights.length / 2)];
 	}
 
 	var noise = median ();
@@ -298,6 +298,18 @@ function sobnikApi ()
 
 	console.log ("Photo text height: "+height);
 	return height;
+    }
+
+    function imageLoaded (img)
+    {
+	// http://www.sajithmr.me/javascript-check-an-image-is-loaded-or-not/
+	if (!img.complete)
+            return false;
+
+	if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0)
+            return false;
+
+	return true;
     }
 
     var gather = function (board) 
@@ -315,30 +327,13 @@ function sobnikApi ()
 
 	var post = function (data) {
 	    console.log (data);
-	    
 	    call ("ads", "POST", data, function () {
 		done ();
 	    });
-
-/*	    for (var i = 0; i < 1000; i++)
-	    {
-		call ("ads", "POST", data, function () {
-		    console.log (i);
-		});
-	    }
-*/
 	};
 
-	if (board.capture)
+	function capture (what, callback) 
 	{
-	    var what = {};
-	    for (var item in board.capture)
-	    {
-		var part = board.capture[item];
-		var url = $(part.selector).attr (part.attr);
-		what[item] = url;
-	    }
-
 	    chrome.runtime.sendMessage (
 		/* ext_id= */"", 
 		{type: "capture", what: what}, 
@@ -363,8 +358,103 @@ function sobnikApi ()
 			}
 		    }
 
-		    post (ad);
+		    callback ();
 		});
+	}
+
+	if (board.capture)
+	{
+	    /* 
+	       Алгоритм:
+	       1. Кликнуть на фото.
+	       2. Подождать пока загрузится (как - img.active onload)
+	       3. Выдернуть загруженное фото (как - img.active)
+	       4. Повторить.
+	     */
+
+	    var queue = [];
+	    for (var item in board.capture)
+	    {
+		var part = board.capture[item];
+		if (part.click)
+		{
+		    $(part.click).each (function (i, e) {
+			var p = {
+			    name: item,
+			    click: e,
+			    selector: part.selector,
+			    attr: part.attr
+			}
+			queue.push (p);
+		    });
+		}
+		else
+		{
+		    $(part.selector).each (function (i, e) {
+			var p = {
+			    name: item,
+			    element: e,
+			    attr: part.attr
+			}
+			queue.push (p);
+		    });
+		}
+	    }
+
+	    var what = {};
+	    function captureNext ()
+	    {
+		if (queue.length > 0)
+		{
+		    var item = queue.shift ();
+
+		    function captureItem (e) 
+		    {
+			var what = {};
+			what[item.name] = $(e).attr (item.attr);
+			capture (what, captureNext);
+		    }
+
+		    if (item.click)
+		    {
+			console.log ("clicking", item.click);
+			$(item.click).trigger ('click');
+			function waitImage ()
+			{
+			    // wait for image to appear on page
+			    later (1000, function () {
+				console.log ("waiting", $(item.selector));
+				if (!$(item.selector).length)
+				    // wait more
+				    waitImage ();
+				else
+				{
+				    // wait until it's loaded
+				    var img = $(item.selector)[0];
+				    if (imageLoaded (img))
+					captureItem (img);
+				    else
+					$(img).on ('load', function () {
+					    captureItem (img);
+					});
+				}
+			    });
+			}
+
+			waitImage ();
+		    }
+		    else 
+		    {
+			captureItem (item.element);
+		    }
+		}
+		else
+		{
+		    post (ad);
+		}
+	    }
+
+	    captureNext ();
 	}
 	else
 	{
@@ -701,7 +791,7 @@ function sobnikApi ()
 
 	function startTab (t) 
 	{
-	    var ttl = 60000; // ms, 60 sec
+	    var ttl = 300000; // ms, 300 sec
 	    tab = t.id;
 
 	    // start killer
