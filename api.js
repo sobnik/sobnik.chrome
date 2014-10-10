@@ -373,7 +373,7 @@ function sobnikApi ()
 	    for (var item in board.capture)
 	    {
 		var part = board.capture[item];
-		if (part.click)
+		if (part.click && $(part.click).length > 0)
 		{
 		    $(part.click).each (function (i, e) {
 			var p = {
