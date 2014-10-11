@@ -593,6 +593,8 @@ function sobnikApi ()
 	function backoff (mult)
 	{
 	    sobnikDelayMult *= mult;
+	    if (sobnikDelayMult > 10.0)
+		sobnikDelayMult = 10.0;
 	    if (retryCallback)
 		later (delay * sobnikDelayMult, retryCallback);
 	}
@@ -600,7 +602,7 @@ function sobnikApi ()
 	function errback () 
 	{
 	    // backoff faster on error
-	    backoff (2);
+	    backoff (2.0);
 	}
 
 	call ("sobnik", "POST", request, /* callback= */null, {
@@ -850,10 +852,10 @@ function sobnikApi ()
 
     function createCrawler ()
     {
-	// random delays 60-200 seconds
+	// random delays 50-120 seconds
 	var delays = [];
 	for (var i = 0; i < 30; i++)
-	    delays.push (rdelay (60, 200));
+	    delays.push (rdelay (50, 120));
 
 	// multiplier used for back-off
 	var delayMult = 1.0;
@@ -861,13 +863,13 @@ function sobnikApi ()
 	var tab = crawlerTab ();
 
 	function backoff () {
-	    delayMult *= 2;
+	    delayMult *= 1.5;
+	    if (delayMult > 5.0)
+		delayMult = 5.0;
 	}
 
 	function speedup () {
-	    delayMult -= 0.1;
-	    if (delayMult < 1.0)
-		delayMult = 1.0;
+	    delayMult = 1.0;
 	}
 
 	function retry () {
