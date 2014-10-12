@@ -273,7 +273,7 @@ function sobnikApi ()
 	}
 
 	// debug
-	if (true)
+	if (false)
 	{
 	    for (var i = 0; i < blacks.length; i++)
 	    {
