@@ -96,6 +96,7 @@
 	if (sender.tab.id == crawler.tab ())
 	{
 	    console.log ("Crawler tab done");
+	    crawler.done ();
 	    crawler.next ();
 	}
     }

@@ -30,6 +30,9 @@ function sobnikApi ()
 //    var api_url = "http://localhost:8081/api/";
 //    var crossDomain = true;
 
+    var crawlerTabSignal = "sobnik-chrome-crawler-tab-signal";
+    var parseDoneSignal = "sobnik-chrome-parse-done-signal";
+
     var call = function (method, type, data, callback, statbacks, errback)
     {
 	$.ajax ({
@@ -46,6 +49,11 @@ function sobnikApi ()
 	    }
 	});
     };
+
+    function isCrawlerTab ()
+    {
+	return "sobnikCrawlerTabMarker" in window;
+    }
 
     var dts = function (date)
     {
@@ -155,9 +163,13 @@ function sobnikApi ()
 
     var done = function ()
     {
+	// this signal was needed for a separate crawler app
+	// now - do we need it?
 	var div = document.createElement('div');
-	$(div).attr("id", "sobnik-chrome-done-signal");
-	document.body.appendChild (div);
+	div.id = parseDoneSignal;
+	$("body").append (div);
+
+	// this signal is sufficient for current app
 	chrome.runtime.sendMessage (
 	    /* ext_id= */"", 
 	    {type: "done"}
@@ -261,7 +273,7 @@ function sobnikApi ()
 	}
 
 	// debug
-	if (false)
+	if (true)
 	{
 	    for (var i = 0; i < blacks.length; i++)
 	    {
@@ -693,7 +705,7 @@ function sobnikApi ()
 		}
 	    }
 	    console.log ("Not parsing");
-	    if ("sobnikCrawlerTab" in window)
+	    if (isCrawlerTab ())
 		done ();
 	})
     }
@@ -708,7 +720,7 @@ function sobnikApi ()
 	    {
 		if (loc.match(board.list.urls[i]) != null)
 		{
-		    console.log ("Marking "+loc);
+		    console.log ("Marking list "+loc);
 		    markList (board);
 		    return;
 		}
@@ -745,7 +757,7 @@ function sobnikApi ()
 
     function start (board) 
     {
-	if ("sobnikCrawlerTab" in window)
+	if (isCrawlerTab ())
 	{
 	    startParse (board);
 	}
@@ -762,6 +774,7 @@ function sobnikApi ()
 	var tab = null;
 	var to = null;
 	var callback = null;
+	var failures = 0;
     
 	function clearTTL ()
 	{
@@ -770,8 +783,15 @@ function sobnikApi ()
 	    to = null;
 	}
 
+	function done ()
+	{
+	    failures = 0;
+	    clearTTL ();
+	}
+
 	function close () 
 	{
+	    failures = 0;
 	    if (!tab)
 	    {
 		callback ();
@@ -795,8 +815,13 @@ function sobnikApi ()
 
 	    // start killer
 	    to = later (ttl, function () {
-		console.log ("TTL expired");
-		close ();
+		if (tab != null)
+		    failures++;
+		console.log ("TTL expired", failures);
+		if (failures > 2)
+		    close ();
+		else
+		    callback ();
 	    });
 
 	    if (chrome.runtime.lastError)
@@ -826,26 +851,95 @@ function sobnikApi ()
 	{
 	    console.log (url);
 	    callback = cb;
+	    clearTTL ();
+
+	    function doOpen ()
+	    {
+		// now, if no crawler tab found - go create one
+		if (tab == null)
+		{		
+		    chrome.tabs.create ({
+			url: url,
+			active: false,
+			selected: false
+		    }, startTab);
+		}
+		else
+		{
+		    console.log ("reusing", tab);
+		    chrome.tabs.update (tab, {
+			url: url
+		    }, startTab);
+		}
+	    }
+
 	    if (tab == null)
 	    {
-		chrome.tabs.create ({
-		    url: url,
-		    active: false,
-		    selected: false
-		}, startTab);
+		// search crawler tab
+		chrome.windows.getAll ({populate: true}, function (ws) {
+		    var count = 0;
+		    ws.forEach (function (w) {
+			w.tabs.forEach (function (t) {
+			    count++;
+			    chrome.tabs.executeScript (t.id, {
+				code: "document.getElementById ('"
+				    +crawlerTabSignal+"') != null",
+			    }, function (result) {
+				count--;
+				if (!chrome.runtime.lastError)
+				{
+				    if (result)
+					result.forEach (function (found) {
+					    console.log (tab, t.id, found);
+					    if (found && tab == null)
+					    {
+						tab = t.id;
+						doOpen ();
+					    }
+					});
+				}
+				    
+				if (count == 0 && tab == null)
+				    doOpen ();
+
+			    })
+			})
+		    })
+		    if (count == 0 && tab == null)
+			doOpen ();
+		})
 	    }
 	    else
 	    {
-		clearTTL ();
-		chrome.tabs.update (tab, {
-		    url: url
-		}, startTab);
+		chrome.tabs.executeScript (tab, {
+		    code: "document.getElementById ('"
+			+crawlerTabSignal+"') != null",
+		}, function (result) {
+		    if (chrome.runtime.lastError)
+		    {
+			tab = null;
+		    }
+		    else
+		    {
+			var found = false;
+			result.forEach (function (f) {
+			    if (f)
+				found = true;
+			});
+		    }
+
+		    if (!found)
+			tab = null;
+
+		    doOpen ();
+		})
 	    }
 	}
 
 	return {
 	    open: open,
-	    close: function () { close (); },
+	    done: done,
+	    close: close,
 	    getId: function () { return tab; },
 	}
     }
@@ -911,6 +1005,7 @@ function sobnikApi ()
 	return {
 	    next: getJob,
 	    tab: tab.getId,
+	    done: tab.done,
 	    close: tab.close,
 	}
     };

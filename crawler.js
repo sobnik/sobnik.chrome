@@ -1,4 +1,4 @@
-window["sobnikCrawlerTab"] = true;
+window["sobnikCrawlerTabMarker"] = true;
 
 (function () {
 
@@ -21,7 +21,13 @@ window["sobnikCrawlerTab"] = true;
 
     function insertSobnik () 
     {
-	
+	// the js variable set at the top is made in the context of 
+	// running extension. when context fails, new context won't see
+	// that variable, but will see this signal.
+	var div = document.createElement ('div');
+	div.id = "sobnik-chrome-crawler-tab-signal";
+	$("body").append (div);
+
 	var settingsUrl = chrome.extension.getURL ("settings.html");
 	var html = "<div id='sobnikCrawlerInfoDiv' "
 	    + "style='position: fixed; left: 10%; top: 10%; "
