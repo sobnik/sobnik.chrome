@@ -58,6 +58,10 @@ small {
   color: #aaa;
 }
 
+.hidden {
+  display: none;
+}
+
 </style>
 
 <div id='content'>
@@ -67,12 +71,93 @@ small {
 </div>
 
 <h3>Сканирование объявлений</h3>
+
+<p>
 <select id="crawlerOn">
 <option value="on">Включено</option>
 <option value="off">Выключено</option>
 </select>
 <small>Если сканирование выключено, Sobnik не тратит ваш Интернет. Если включено &mdash; вы помогаете другим пользователям!</small>
+</p>
 
+<div class='hidden FIXME REMOVE'>
+
+<p id="crawlerOffTmp">
+
+<div id="crawlerOffUntil" class="hidden">
+Временно выключено до <strong id="crawlerOffUntilTime"></strong>
+<input type="button" id="crawlerOnNow" value="Отменить, включить сейчас">
+</div>
+
+<input type="button" id="crawlerOff30m" value="Выключить на 30 минут">
+<input type="button" id="crawlerOff1h" value="Выключить на 1 час">
+<input type="button" id="crawlerOff3h" value="Выключить на 3 часа">
+<small>Можно выключить сканирование на некоторое время</small>
+</p>
+
+<p id="crawlerOnUntil" class='hidden'>
+Включено до <span id="crawlerOnUntilTime"></span>
+<input type="button" id="crawlerOffNow" value="Выключить сейчас">
+</p>
+
+<p id="crawlerOnTmp" class='hidden'>
+<input type="button" id="crawlerOn30m" value="Включить на 30 минут">
+<input type="button" id="crawlerOn1h" value="Включить на 1 час">
+<input type="button" id="crawlerOn3h" value="Включить на 3 часа">
+</p>
+
+<p>
+<input type="checkbox" id="crawlIncognito"><label for="crawlIncognito">Сканировать в режиме Инкогнито</label>
+<small>Рекомендуемый режим, снижает возможности браузера и досок объявлений по слежению за вами.
+</small>
+
+<div id="crawlIncognitoWarning" class="hidden"><strong>Чтобы Sobnik мог работать в режиме инкогнито</strong>, перейдите в список установленных расширений (Меню браузера &rarr; Настройки, слева &mdash; "Расширения"), и включите галочку "Разрешить использование в режиме инкогнито" возле плагина Sobnik.</div>
+</p>
+
+<p>
+<table border="0" cellspacing="0" cellpadding="0"><tr>
+<td>
+<select id="crawlerSchedule">
+<option value="on">Сканировать только</option>
+<option value="oаа">Не сканировать только</option>
+</select>
+</td>
+<td>
+в часы:
+</td>
+<td>
+<input type="checkbox" id="crawlerHour00"><label for="crawlerHour00">00</label>
+<input type="checkbox" id="crawlerHour01"><label for="crawlerHour01">01</label>
+<input type="checkbox" id="crawlerHour02"><label for="crawlerHour02">02</label>
+<input type="checkbox" id="crawlerHour03"><label for="crawlerHour03">03</label>
+<input type="checkbox" id="crawlerHour04"><label for="crawlerHour04">04</label>
+<input type="checkbox" id="crawlerHour05"><label for="crawlerHour05">05</label>
+<input type="checkbox" id="crawlerHour06"><label for="crawlerHour06">06</label>
+<input type="checkbox" id="crawlerHour07"><label for="crawlerHour07">07</label>
+<input type="checkbox" id="crawlerHour08"><label for="crawlerHour08">08</label>
+<input type="checkbox" id="crawlerHour09"><label for="crawlerHour09">09</label>
+<input type="checkbox" id="crawlerHour10"><label for="crawlerHour10">10</label>
+<input type="checkbox" id="crawlerHour11"><label for="crawlerHour11">11</label>
+<br>
+<input type="checkbox" id="crawlerHour12"><label for="crawlerHour12">12</label>
+<input type="checkbox" id="crawlerHour13"><label for="crawlerHour13">13</label>
+<input type="checkbox" id="crawlerHour14"><label for="crawlerHour14">14</label>
+<input type="checkbox" id="crawlerHour15"><label for="crawlerHour15">15</label>
+<input type="checkbox" id="crawlerHour16"><label for="crawlerHour16">16</label>
+<input type="checkbox" id="crawlerHour17"><label for="crawlerHour17">17</label>
+<input type="checkbox" id="crawlerHour18"><label for="crawlerHour18">18</label>
+<input type="checkbox" id="crawlerHour19"><label for="crawlerHour19">19</label>
+<input type="checkbox" id="crawlerHour20"><label for="crawlerHour20">20</label>
+<input type="checkbox" id="crawlerHour21"><label for="crawlerHour21">21</label>
+<input type="checkbox" id="crawlerHour22"><label for="crawlerHour22">22</label>
+<input type="checkbox" id="crawlerHour23"><label for="crawlerHour23">23</label>
+</td>
+</tr></table>
+</p>
+
+</div> <!-- FIXME REMOVE -->
+
+<hr>
 <h3>Других настроек пока нет</h3>
 
 <p>Пишите нам: <strong>sobnik.ru@gmail.com</strong></p>

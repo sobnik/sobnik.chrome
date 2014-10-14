@@ -108,6 +108,13 @@
 	});	
     }
 
+    function showHowto ()
+    {
+	chrome.tabs.create ({
+	    url: "http://sobnik.com/kak-rabotaet-sobnik.html"
+	});	
+    }
+
     function crawlerOff ()
     {
 	crawler.close ();
@@ -128,6 +135,11 @@
 	var handler = handlers[message.type];
 	if (handler)
 	    return handler (sender, message, reply);
+    });
+
+    chrome.runtime.onInstalled.addListener (function (details) {
+	if (details.reason == "install")
+	    showHowto ();	    
     });
 
 } ());
