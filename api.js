@@ -176,7 +176,7 @@ function sobnikApi ()
 	);
     }
 
-    function detectTextOnPhoto (data) 
+    function detectTextOnPhoto (board, data) 
     {
 	// no matter what image format we choose, browser gets it right
 	// but don't remove /jpeg - it won't work!
@@ -194,90 +194,120 @@ function sobnikApi ()
 
 	// rgba
 	var imageData = context.getImageData (0, 0, img.width, img.height);
-	var pixels = imageData.data;	
+	var pixels = imageData.data;
 
-	// 1 channel
-	var blacks = new Uint8ClampedArray (pixels.length / 4);
-	
-	function offset (x, y)
+	// result
+	var sharps = new Uint8ClampedArray (pixels.length / 4);	
+	function setSharp (x, y)
 	{
-	    return (y * img.width + x) * 4;
-	}
-
-	function setBlack (x, y)
-	{
-	    blacks[y * img.width + x] = 1;
+	    sharps[y * img.width + x]++;
 	}
 
 	// text detection filters
-	var sharpDistance = 2 // px
-	var sharpThreshold = 50 // 8-bit depth
-	var minTextWeight = 40 // px
+	var SharpRadius = 2 // px
+	var SharpThreshold = 50 // 8-bit depth
+	var MaxFeatureDistance = 10; // px
+	var MinTextWeight = 40 // px
+	var MinSharpChannels = 2;
 
-	for (var y = 0; y < img.height; y++)
+        var chan = new jsfeat.matrix_t (img.width, img.height, jsfeat.U8C1_t);
+	function offset (x, y)
 	{
-	    for (var x = sharpDistance; x < img.width; x++)
+	    return y * img.width + x;
+	}
+
+	// for each channel and their combination
+	for (var i = 0; i < 4; i++)
+	{
+	    // get channel data
+	    if (i < 3)
+		for (var j = 0; j < img.width * img.height; j++)
+		    chan.data[j] = pixels[j*4+i];
+	    else
+		jsfeat.imgproc.grayscale (pixels, img.width, img.height, chan);
+
+	    // equalize
+	    jsfeat.imgproc.equalize_histogram (chan, chan);
+
+	    for (var y = 0; y < img.height; y++)
 	    {
-		var oc = offset (x, y);
-		var od = offset (x-sharpDistance, y);
-		var sharp = false;
-		// for each rgb channel
-		for (var i = 0; !sharp && i < 3; i++)
+		for (var x = SharpRadius; x < img.width; x++)
 		{
-		    var c = pixels[oc + i];
-		    var d = pixels[od + i];
+		    var oc = offset (x, y);
+		    var od = offset (x-SharpRadius, y);
+		    var c = chan.data[oc];
+		    var d = chan.data[od];
 		    var diff = Math.abs (c - d);
-//		    if (y == 465)
-//			console.log ("y "+y+" x "+x+" c "+c+" d "+d+" diff "+diff);
-		    sharp = diff > sharpThreshold;
+		    var sharp = diff > SharpThreshold;
+		    if (sharp)
+			sharps[offset (x, y)]++;
 		}
-		if (!sharp)
-		    setBlack (x, y);
-	    }
+	    }	    
+	}
+
+	// cut watermark
+	if (board.watermark)
+	{
+	    var tl = board.watermark.top_left;
+	    var br = board.watermark.bottom_right;
+
+	    var x1 = ("left" in tl) ? tl.left : img.width - tl.right;
+	    var y1 = ("top" in tl) ? tl.top : img.height - tl.bottom;
+	    var x2 = ("left" in br) ? br.left : img.width - br.right;
+	    var y2 = ("top" in br) ? br.top : img.height - br.bottom;
+
+	    for (var y = y1; y <= y2; y++)
+		for (var x = x1; x <= x2; x++)
+		    sharps[offset (x, y)] = 0;
+	}
+
+	function median (arr)
+	{
+	    if (arr.length == 0)
+		return 0
+	    
+	    arr.sort (function (a, b) { return a < b; });
+	    return arr[Math.floor (arr.length / 2)];
 	}
 
 	var weights = [];
 	for (var y = 0; y < img.height; y++)
 	{
 	    var weight = 0;
+	    var dists = [];
+	    var last_sharp = 0;
 	    for (var x = 0; x < img.width; x++)
 	    {
-		function black (x, y)
-		{
-		    return blacks[y * img.width + x] != 0;
-		}
-
-		if (black (x, y))
+		if (sharps[offset (x, y)] < MinSharpChannels)
 		    continue;
 
-		var noiseX = true;
-		if (x > 0 && !black (x-1, y))
-		    noiseX = false;
-
-		if (x < (img.width - 1) && !black (x+1, y))
-		    noiseX = false
-
-		var noiseY = true
-		if (y > 0 && !black (x, y-1))
-		    noiseY = false
-
-		if (y < (img.height - 1) && !black (x, y+1))
-		    noiseY = false
-
-		if (noiseX || noiseY)
-		    setBlack (x, y);
-		else
-		    weight++		
+		dists.push (x - last_sharp);
+		last_sharp = x;
+		weight++;
 	    }
-	    weights.push (weight);
+
+	    var d = median (dists);
+	    if (d <= MaxFeatureDistance)
+		weights.push (weight);
 	}
+ 
+	var noise = median (weights);
+	console.log ("Noise "+noise);
+	var height = 0;
+	weights.forEach (function (w, i) {
+	    var text = w > (noise + MinTextWeight);
+	    if (text)
+		height++;
+	});
+
+	console.log ("Photo text height ", height);
 
 	// debug
 	if (false)
 	{
-	    for (var i = 0; i < blacks.length; i++)
+	    for (var i = 0; i < sharps.length; i++)
 	    {
-		if (!blacks[i])
+		if (sharps[i] >= MinSharpChannels)
 		    continue;
 		
 		pixels[i*4] = 0;
@@ -285,30 +315,15 @@ function sobnikApi ()
 		pixels[i*4+2] = 0;
 	    }
 	    context.putImageData (imageData, 0, 0);
-	    
+
+	    // add to page
             $(img).attr("src", canvas.toDataURL ("image/png"));
-	    document.body.appendChild (img);
-	}
- 
-	function median ()
-	{
-	    if (weights.length == 0)
-		return 0
-	    
-	    weights.sort (function (a, b) { return a < b; });
-	    return weights[Math.floor (weights.length / 2)];
+	    $("body").append (img);
+	    var div = document.createElement ("div");
+	    $(div).html (height);
+	    $("body").append (div);
 	}
 
-	var noise = median ();
-	console.log ("Noise "+noise);
-	var height = 0;
-	weights.forEach (function (w) {
-	    var text = w > (noise + minTextWeight);
-	    if (text)
-		height++;
-	});
-
-	console.log ("Photo text height: "+height);
 	return height;
     }
 
@@ -340,6 +355,7 @@ function sobnikApi ()
 	function post (data) 
 	{
 	    console.log (data);
+
 	    call ("ads", "POST", data, function () {
 		done ();
 	    });
@@ -369,7 +385,7 @@ function sobnikApi ()
 			}
 			else
 			{
-			    var height = detectTextOnPhoto (response[item]);
+			    var height = detectTextOnPhoto (board, response[item]);
 			    item += "Height";
 			    setField (item, height);
 			}

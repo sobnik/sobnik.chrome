@@ -3,7 +3,7 @@
 
     "name": "Sobnik: фильтрует риелторов",
     "description": "Выявляет посредников в объявлениях по недвижимости",
-    "version": "1.17",
+    "version": "1.18",
 
     "icons": { 
 	"128": "images/icon_128.png" 
@@ -27,7 +27,7 @@
     "content_scripts": [
 	{
 	    "matches": ["http://www.avito.ru/*", "https://www.avito.ru/*"],
-	    "js": ["jquery.js", "api.js", "avito.js"]
+	    "js": ["jquery.js", "jsfeat-min.js", "api.js", "avito.js"]
 	}
     ],
 

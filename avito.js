@@ -59,6 +59,17 @@
 	    }
 	},
 
+	watermark: {
+	    top_left: {
+		right: 105,
+		bottom: 40
+	    },
+	    bottom_right: {
+		right: 10,
+		bottom: 15
+	    }
+	},
+
 	list: {
 	    // the row in the list
 	    rowSelector: "div.catalog div.item", 
