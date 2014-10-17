@@ -88,8 +88,7 @@
     };
 
     var crawler = sobnikApi ().crawler ()
-    // start it
-    crawler.next ();
+    crawler.start ();
 
     function done (sender)
     {
@@ -97,8 +96,21 @@
 	{
 	    console.log ("Crawler tab done");
 	    crawler.done ();
-	    crawler.next ();
 	}
+    }
+
+    function ready (sender, message, reply)
+    {
+	if (sender.tab.id == crawler.tab ())
+	{
+	    console.log ("Crawler tab ready");
+	    crawler.ready (function () {
+		reply ({type: "go"});
+	    });
+	}
+
+	// we'll reply asynchronously
+	return true;
     }
 
     function showSettings ()
@@ -129,7 +141,8 @@
 	    "activated": activated,
 	    "showSettings": showSettings,
 	    "crawlerOff": crawlerOff,
-	    "done": done
+	    "done": done,
+	    "ready": ready,
 	};
 
 	var handler = handlers[message.type];

@@ -64,4 +64,4 @@ console.log ("crawler tab started", window["sobnikCrawlerTabMarker"]);
 
 }) ();
 
-100;
+document.location.href;

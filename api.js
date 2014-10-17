@@ -848,16 +848,26 @@ function sobnikApi ()
 
     function start (board) 
     {
-	if (isCrawlerTab ())
-	{
-	    startParse (board);
-	}
-	else
-	{
-	    startMarkList (board);
-	    startMarkPage (board);
-	}
-	activate ();
+	// we must get in sync with bg tab
+	// that may perform some action
+	// before we start
+	chrome.runtime.sendMessage (
+	    /* ext_id= */"", 
+	    {type: "ready"}, 
+	    /* options= */{}, 
+	    function () {
+		console.log ("Bg confirms ready");
+		if (isCrawlerTab ())
+		{
+		    startParse (board);
+		}
+		else
+		{
+		    startMarkList (board);
+		    startMarkPage (board);
+		}
+		activate ();
+	    });
     }
 
     function crawlerTab () 
@@ -871,6 +881,7 @@ function sobnikApi ()
 	{
 	    if (cb)
 		cb ();
+	    cb = null;
 	}
     
 	function clearTTL ()
@@ -884,6 +895,7 @@ function sobnikApi ()
 	{
 	    failures = 0;
 	    clearTTL ();
+	    callback ();
 	}
 
 	function checkTab (t, callback)
@@ -965,8 +977,20 @@ function sobnikApi ()
 	    // notice if tab gets closed
 	    chrome.tabs.onRemoved.addListener(function (id) {
 		if (id == tab)
+		{
 		    tab = null;
+		    callback ();
+		}
 	    })
+	}
+
+	function ready (callback)
+	{
+	    if (tab == null)
+	    {
+		callback ();
+		return;
+	    }
 
 	    // mark it as a crawler tab
 	    console.log ("starting crawler in tab", tab);
@@ -977,6 +1001,7 @@ function sobnikApi ()
 		if (chrome.runtime.lastError)
 		    console.log (chrome.runtime.lastError);
 		console.log ("started crawler", result);
+		callback ();
 	    });
 	}
 
@@ -1067,6 +1092,7 @@ function sobnikApi ()
 	    open: open,
 	    done: done,
 	    close: close,
+	    ready: ready,
 	    getId: function () { return tab; },
 	}
     }
@@ -1130,8 +1156,9 @@ function sobnikApi ()
 	};
 
 	return {
-	    next: getJob,
 	    tab: tab.getId,
+	    start: getJob,
+	    ready: tab.ready,
 	    done: tab.done,
 	    close: tab.close,
 	}
