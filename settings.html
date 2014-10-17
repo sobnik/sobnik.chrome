@@ -35,8 +35,11 @@ h3 {
 }
 
 .par {
-  font-size: 2em;
-  margin-top: 30px;
+  margin-top: 10px;
+}
+
+.group {
+  padding: 10px 0 10px 0;
 }
 
 .broker {
@@ -72,60 +75,67 @@ small {
 
 <h3>Сканирование объявлений</h3>
 
-<p>
+<div class="group">
+
+<div class='par'>
 <select id="crawlerOn">
 <option value="on">Включено</option>
 <option value="off">Выключено</option>
 </select>
 <small>Если сканирование выключено, Sobnik не тратит ваш Интернет. Если включено &mdash; вы помогаете другим пользователям!</small>
-</p>
+</div>
 
 <div class='hidden FIXME REMOVE'>
 
-<p id="crawlerOffTmp">
-
-<div id="crawlerOffUntil" class="hidden">
+<div id="crawlerOffUntil" class="hidden par">
 Временно выключено до <strong id="crawlerOffUntilTime"></strong>
-<input type="button" id="crawlerOnNow" value="Отменить, включить сейчас">
+<input type="button" id="crawlerOnNow" value="Отменить, включить сейчас" />
 </div>
 
-<input type="button" id="crawlerOff30m" value="Выключить на 30 минут">
-<input type="button" id="crawlerOff1h" value="Выключить на 1 час">
-<input type="button" id="crawlerOff3h" value="Выключить на 3 часа">
+<div id="crawlerOffTmp" class='par'>
+<input type="button" id="crawlerOff30m" value="Выключить на 30 минут" />
+<input type="button" id="crawlerOff1h" value="Выключить на 1 час" />
+<input type="button" id="crawlerOff3h" value="Выключить на 3 часа" />
 <small>Можно выключить сканирование на некоторое время</small>
-</p>
+</div>
 
-<p id="crawlerOnUntil" class='hidden'>
-Включено до <span id="crawlerOnUntilTime"></span>
-<input type="button" id="crawlerOffNow" value="Выключить сейчас">
-</p>
+<div id="crawlerOnUntil" class="hidden par">
+Временно включено до <strong id="crawlerOnUntilTime"></strong>
+<input type="button" id="crawlerOffNow" value="Отменить, выключить сейчас" />
+</div>
 
-<p id="crawlerOnTmp" class='hidden'>
+<div id="crawlerOnTmp" class='hidden par'>
 <input type="button" id="crawlerOn30m" value="Включить на 30 минут">
 <input type="button" id="crawlerOn1h" value="Включить на 1 час">
 <input type="button" id="crawlerOn3h" value="Включить на 3 часа">
-</p>
+<small>Можно включить сканирование на некоторое время</small>
+</div>
 
-<p>
+</div><!-- FIXME remove -->
+
+</div>
+
+<div class='par group hidden FIXME REMOVE'>
 <input type="checkbox" id="crawlIncognito"><label for="crawlIncognito">Сканировать в режиме Инкогнито</label>
 <small>Рекомендуемый режим, снижает возможности браузера и досок объявлений по слежению за вами.
 </small>
 
-<div id="crawlIncognitoWarning" class="hidden"><strong>Чтобы Sobnik мог работать в режиме инкогнито</strong>, перейдите в список установленных расширений (Меню браузера &rarr; Настройки, слева &mdash; "Расширения"), и включите галочку "Разрешить использование в режиме инкогнито" возле плагина Sobnik.</div>
-</p>
+<div id="crawlIncognitoWarning" class="hidden par"><strong>Чтобы Sobnik мог работать в режиме инкогнито</strong>, перейдите в список установленных расширений (Меню браузера &rarr; Настройки, слева &mdash; "Расширения"), и включите галочку "Разрешить использование в режиме инкогнито" возле плагина Sobnik.
+</div>
+</div>
 
-<p>
+<div class='par group hidden FIXME REMOVE'>
 <table border="0" cellspacing="0" cellpadding="0"><tr>
 <td>
 <select id="crawlerSchedule">
 <option value="on">Сканировать только</option>
-<option value="oаа">Не сканировать только</option>
+<option value="off">Не сканировать только</option>
 </select>
 </td>
 <td>
 в часы:
 </td>
-<td>
+<td id="crawlerHours">
 <input type="checkbox" id="crawlerHour00"><label for="crawlerHour00">00</label>
 <input type="checkbox" id="crawlerHour01"><label for="crawlerHour01">01</label>
 <input type="checkbox" id="crawlerHour02"><label for="crawlerHour02">02</label>
@@ -153,9 +163,7 @@ small {
 <input type="checkbox" id="crawlerHour23"><label for="crawlerHour23">23</label>
 </td>
 </tr></table>
-</p>
-
-</div> <!-- FIXME REMOVE -->
+</div>
 
 <hr>
 <h3>Других настроек пока нет</h3>

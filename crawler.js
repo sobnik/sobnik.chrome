@@ -1,4 +1,5 @@
 window["sobnikCrawlerTabMarker"] = true;
+console.log ("crawler tab started", window["sobnikCrawlerTabMarker"]);
 
 (function () {
 
@@ -62,3 +63,5 @@ window["sobnikCrawlerTabMarker"] = true;
     waitJquery (insertSobnik);
 
 }) ();
+
+100;

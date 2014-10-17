@@ -28,17 +28,76 @@ function sobnikApi ()
     var api_url = "http://sobnik.com/api/";
     var crossDomain = false;
 //    var api_url = "http://localhost:8081/api/";
-//    var crossDomain = true;
+  //  var crossDomain = true;
 
     var crawlerTabSignal = "sobnik-chrome-crawler-tab-signal";
     var parseDoneSignal = "sobnik-chrome-parse-done-signal";
 
-    var call = function (method, type, data, callback, statbacks, errback)
+    var token = "";
+    var requestingToken = "<requesting>";
+
+    function authHeaders ()
     {
+	var headers = {};
+	if (token != "" && token != requestingToken)
+	    headers["Authorization"] = token;
+	return headers;
+    }
+
+    function getToken () 
+    {
+	if (token)
+	    return;
+
+	chrome.storage.local.get ("token", function (items) {
+	    token = items.token;
+	    if (token)
+		return;
+
+	    token = requestingToken;
+
+	    function errback () {
+		console.log ("Refused token");
+		token = "";
+	    }
+
+	    $.ajax ({
+		url: api_url + "token",
+		type: "POST",
+		data: null,
+		headers: authHeaders (),
+		crossDomain: crossDomain,
+		statusCode: {
+		    200: function (data) {
+			console.log (data);
+			token = data.Token;
+			chrome.storage.local.set ({token: token});
+		    },
+		    204: errback
+		},
+		error: errback
+	    });
+
+	});
+    }
+
+    function call (method, type, data, callback, statbacks, errback)
+    {
+	if (!statbacks)
+	    statbacks = {};
+
+	statbacks[403] = function () {
+	    console.log ("Token expired");
+	    token = "";
+	    chrome.storage.local.set ({token: ""});
+	    getToken ();
+	}
+
 	$.ajax ({
 	    url: api_url + method,
 	    type: type,
 	    data: JSON.stringify (data),
+	    headers: authHeaders (),
 	    success: callback,
 	    crossDomain: crossDomain,
 	    statusCode: statbacks,
@@ -194,56 +253,48 @@ function sobnikApi ()
 
 	// rgba
 	var imageData = context.getImageData (0, 0, img.width, img.height);
-	var pixels = imageData.data;
+	var pixels = imageData.data;	
 
-	// result
-	var sharps = new Uint8ClampedArray (pixels.length / 4);	
-	function setSharp (x, y)
+	// 1 channel
+	var blacks = new Uint8ClampedArray (pixels.length / 4);
+	
+	function offset (x, y)
 	{
-	    sharps[y * img.width + x]++;
+	    return (y * img.width + x) * 4;
+	}
+
+	function setBlack (x, y)
+	{
+	    blacks[y * img.width + x] = 1;
 	}
 
 	// text detection filters
-	var SharpRadius = 2 // px
-	var SharpThreshold = 50 // 8-bit depth
-	var MaxFeatureDistance = 10; // px
-	var MinTextWeight = 40 // px
-	var MinSharpChannels = 2;
+	var sharpDistance = 2 // px
+	var sharpThreshold = 50 // 8-bit depth
+	var minTextWeight = 40 // px
 
-        var chan = new jsfeat.matrix_t (img.width, img.height, jsfeat.U8C1_t);
-	function offset (x, y)
+	for (var y = 0; y < img.height; y++)
 	{
-	    return y * img.width + x;
-	}
-
-	// for each channel and their combination
-	for (var i = 0; i < 4; i++)
-	{
-	    // get channel data
-	    if (i < 3)
-		for (var j = 0; j < img.width * img.height; j++)
-		    chan.data[j] = pixels[j*4+i];
-	    else
-		jsfeat.imgproc.grayscale (pixels, img.width, img.height, chan);
-
-	    // equalize
-	    jsfeat.imgproc.equalize_histogram (chan, chan);
-
-	    for (var y = 0; y < img.height; y++)
+	    for (var x = sharpDistance; x < img.width; x++)
 	    {
-		for (var x = SharpRadius; x < img.width; x++)
+		var oc = offset (x, y);
+		var od = offset (x-sharpDistance, y);
+		var sharp = false;
+		// for each rgb channel
+		for (var i = 0; !sharp && i < 3; i++)
 		{
-		    var oc = offset (x, y);
-		    var od = offset (x-SharpRadius, y);
-		    var c = chan.data[oc];
-		    var d = chan.data[od];
+		    var c = pixels[oc + i];
+		    var d = pixels[od + i];
 		    var diff = Math.abs (c - d);
-		    var sharp = diff > SharpThreshold;
-		    if (sharp)
-			sharps[offset (x, y)]++;
+//		    if (y == 465)
+//			console.log ("y "+y+" x "+x+" c "+c+" d "+d+" diff "+diff);
+		    sharp = diff > sharpThreshold;
 		}
-	    }	    
+		if (!sharp)
+		    setBlack (x, y);
+	    }
 	}
+
 
 	// cut watermark
 	if (board.watermark)
@@ -258,56 +309,71 @@ function sobnikApi ()
 
 	    for (var y = y1; y <= y2; y++)
 		for (var x = x1; x <= x2; x++)
-		    sharps[offset (x, y)] = 0;
-	}
-
-	function median (arr)
-	{
-	    if (arr.length == 0)
-		return 0
-	    
-	    arr.sort (function (a, b) { return a < b; });
-	    return arr[Math.floor (arr.length / 2)];
+		    setBlack(x, y);
 	}
 
 	var weights = [];
 	for (var y = 0; y < img.height; y++)
 	{
 	    var weight = 0;
-	    var dists = [];
-	    var last_sharp = 0;
 	    for (var x = 0; x < img.width; x++)
 	    {
-		if (sharps[offset (x, y)] < MinSharpChannels)
+		function black (x, y)
+		{
+		    return blacks[y * img.width + x] != 0;
+		}
+
+		if (black (x, y))
 		    continue;
 
-		dists.push (x - last_sharp);
-		last_sharp = x;
-		weight++;
-	    }
+		var noiseX = true;
+		if (x > 0 && !black (x-1, y))
+		    noiseX = false;
 
-	    var d = median (dists);
-	    if (d <= MaxFeatureDistance)
-		weights.push (weight);
+		if (x < (img.width - 1) && !black (x+1, y))
+		    noiseX = false
+
+		var noiseY = true
+		if (y > 0 && !black (x, y-1))
+		    noiseY = false
+
+		if (y < (img.height - 1) && !black (x, y+1))
+		    noiseY = false
+
+		if (noiseX || noiseY)
+		    setBlack (x, y);
+		else
+		    weight++		
+	    }
+	    weights.push (weight);
 	}
  
-	var noise = median (weights);
+	function median ()
+	{
+	    if (weights.length == 0)
+		return 0
+	    
+	    weights.sort (function (a, b) { return a < b; });
+	    return weights[Math.floor (weights.length / 2)];
+	}
+
+	var noise = median ();
 	console.log ("Noise "+noise);
 	var height = 0;
-	weights.forEach (function (w, i) {
-	    var text = w > (noise + MinTextWeight);
+	weights.forEach (function (w) {
+	    var text = w > (noise + minTextWeight);
 	    if (text)
 		height++;
 	});
 
-	console.log ("Photo text height ", height);
+	console.log ("Photo text height: "+height);
 
 	// debug
 	if (false)
 	{
-	    for (var i = 0; i < sharps.length; i++)
+	    for (var i = 0; i < blacks.length; i++)
 	    {
-		if (sharps[i] >= MinSharpChannels)
+		if (!blacks[i])
 		    continue;
 		
 		pixels[i*4] = 0;
@@ -315,10 +381,10 @@ function sobnikApi ()
 		pixels[i*4+2] = 0;
 	    }
 	    context.putImageData (imageData, 0, 0);
-
-	    // add to page
+	    
             $(img).attr("src", canvas.toDataURL ("image/png"));
 	    $("body").append (img);
+
 	    var div = document.createElement ("div");
 	    $(div).html (height);
 	    $("body").append (div);
@@ -355,7 +421,6 @@ function sobnikApi ()
 	function post (data) 
 	{
 	    console.log (data);
-
 	    call ("ads", "POST", data, function () {
 		done ();
 	    });
@@ -487,13 +552,23 @@ function sobnikApi ()
 	}
     };
 
-    var findTrigger = function (selector, callback) 
+    var findTrigger = function (selectors, callback) 
     {
-	var $trigger = $(selector);
+	var $trigger = [];
+	if (Array.isArray (selectors))
+	{
+	    for (var i = 0; $trigger.length == 0 && i < selectors.length; i++)
+		$trigger = $(selectors[i]);
+	}
+	else
+	{
+	    $trigger = $(selectors);
+	}
+
 	if ($trigger.length == 0)
 	{
 	    later (1000, function () {
-		findTrigger (selector, callback);
+		findTrigger (selectors, callback);
 	    });
 	}
 	else
@@ -789,8 +864,14 @@ function sobnikApi ()
     {
 	var tab = null;
 	var to = null;
-	var callback = null;
+	var cb = null;
 	var failures = 0;
+
+	function callback ()
+	{
+	    if (cb)
+		cb ();
+	}
     
 	function clearTTL ()
 	{
@@ -805,6 +886,26 @@ function sobnikApi ()
 	    clearTTL ();
 	}
 
+	function checkTab (t, callback)
+	{
+	    chrome.tabs.executeScript (t, {
+		code: "document.getElementById ('"
+		    +crawlerTabSignal+"') != null",
+	    }, function (result) {
+		var found = false;
+		var error = chrome.runtime.lastError;
+		if (!error && result)
+		{
+		    result.forEach (function (f) {
+			if (f)
+			    found = true;
+		    });
+		}
+
+		callback (found, chrome.runtime.lastError);
+	    })
+	}
+
 	function close () 
 	{
 	    failures = 0;
@@ -814,10 +915,24 @@ function sobnikApi ()
 		return;
 	    }
 
-	    chrome.tabs.remove (Number(tab), function () {
-		if (chrome.runtime.lastError)
-		    console.log (chrome.runtime.lastError);
-		callback ();
+	    // check if tab is still ours
+	    var t = tab;
+	    checkTab (t, function (found) {
+		if (found) 
+		{
+		    console.log ("Tab is still ours");
+		    // remove
+		    chrome.tabs.remove (Number(t), function () {
+			if (chrome.runtime.lastError)
+			    console.log (chrome.runtime.lastError);
+			callback ();
+		    });
+		}
+		else
+		{
+		    console.log ("Tab is not ours");
+		    callback ();
+		}
 	    });
 
 	    clearTTL ();
@@ -854,19 +969,21 @@ function sobnikApi ()
 	    })
 
 	    // mark it as a crawler tab
+	    console.log ("starting crawler in tab", tab);
 	    chrome.tabs.executeScript (tab, {
 		file: "crawler.js",
 		runAt: "document_start",
-	    }, function () {
+	    }, function (result) {
 		if (chrome.runtime.lastError)
 		    console.log (chrome.runtime.lastError);
+		console.log ("started crawler", result);
 	    });
 	}
 
-	function open (url, cb)
+	function open (url, cback)
 	{
 	    console.log (url);
-	    callback = cb;
+	    cb = cback;
 	    clearTTL ();
 
 	    function doOpen ()
@@ -893,28 +1010,22 @@ function sobnikApi ()
 	    {
 		// search crawler tab
 		chrome.windows.getAll ({populate: true}, function (ws) {
+
 		    var count = 0;
 		    ws.forEach (function (w) {
+
 			w.tabs.forEach (function (t) {
+
 			    count++;
-			    chrome.tabs.executeScript (t.id, {
-				code: "document.getElementById ('"
-				    +crawlerTabSignal+"') != null",
-			    }, function (result) {
+			    checkTab (t.id, function (found) {
 				count--;
-				if (!chrome.runtime.lastError)
+
+				if (found && tab == null)
 				{
-				    if (result)
-					result.forEach (function (found) {
-					    console.log (tab, t.id, found);
-					    if (found && tab == null)
-					    {
-						tab = t.id;
-						doOpen ();
-					    }
-					});
+				    tab = t.id;
+				    doOpen ();
 				}
-				    
+
 				if (count == 0 && tab == null)
 				    doOpen ();
 
@@ -965,7 +1076,7 @@ function sobnikApi ()
 	// random delays 50-120 seconds
 	var delays = [];
 	for (var i = 0; i < 30; i++)
-	    delays.push (rdelay (50, 120));
+	    delays.push (rdelay (50, 120)); 
 
 	// multiplier used for back-off
 	var delayMult = 1.0;
@@ -1010,7 +1121,7 @@ function sobnikApi ()
 				tab.open (data.Url, getJob);
 			    },
 			    204: retry
-			});
+			}, retry);
 		    }
 		})
 	    }
@@ -1025,6 +1136,9 @@ function sobnikApi ()
 	    close: tab.close,
 	}
     };
+
+    // get the token at start-up
+    getToken ();
 
     var s = {
 	call: call,

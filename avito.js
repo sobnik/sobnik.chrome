@@ -42,7 +42,10 @@
 
 	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
 
-	untrigger: "div.alert p:contains(\"заблокировано\")",
+	untrigger: [
+	    "div.alert p:contains(\"заблокировано\")",
+	    "div.alert p:contains(\"истёк\")",
+	],
 
 	// FIXME move this to capture stuff
 	clicks: ["span.j-phone-show__insert span.btn__text"],

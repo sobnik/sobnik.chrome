@@ -41,8 +41,64 @@ repeat (function () {
 });
 
 repeat (function () {
+    chrome.storage.local.get ("crawlerOnUntil", function (items) {
+	if (!items.crawlerOnUntil)
+	{
+	    $("crawlerOnUntil").hide ();
+	    return;
+	}
+
+	var now = new Date ();
+	var till = new Date (items.crawlerOnUntil);
+	if (now.getTime () < till.getTime ())
+	{
+	    $("#crawlerOnUntilTime").html (till.toLocaleString ());
+	    $("#crawlerOnUntil").show ();
+	}
+	else
+	{
+	    $("#crawlerOnUntil").hide ();
+	}
+    });
+});
+
+repeat (function () {
     chrome.storage.local.get ("crawler", function (items) {
-	$("#crawlerOn").val (items.crawler);
+	var on = items.crawler;
+	$("#crawlerOn").val ((on == "off") ? "off" : "on");
+	if (on == "on")
+	{
+	    $("#crawlerOffTmp").show ();
+	    $("#crawlerOnTmp").hide ();
+	}
+	else
+	{
+	    $("#crawlerOffTmp").hide ();
+	    $("#crawlerOnTmp").show ();
+	}
+    });
+});
+
+repeat (function () {
+    chrome.storage.local.get ("crawlerIncognito", function (items) {
+	var on = items.crawlerIncognito;
+	$("#crawlIncognito").prop ("checked", (on == "on") ? true : false);
+    });
+});
+
+repeat (function () {
+    chrome.storage.local.get ("crawlerSchedule", function (items) {
+	var on = items.crawlerSchedule;
+	$("#crawlerSchedule").val ((on == "off") ? "off" : "on");
+    });
+});
+
+repeat (function () {
+    $("#crawlerHours input[type=checkbox]").each (function (i, e) {
+	chrome.storage.local.get (e.id, function (items) {
+	    var on = items[e.id];
+	    $(e).prop ("checked", (on == "on") ? true : false);
+	});
     });
 });
 
@@ -69,10 +125,19 @@ function crawlerOnTimed (minutes)
     crawlerTimed (/* off= */false, minutes);
 }
 
+function off ()
+{
+    chrome.runtime.sendMessage (
+	/* ext_id= */"", 
+	{type: "crawlerOff"}
+    );
+}
+
 // event-handlers
 
-$("#crawlerOnNow").on ('click', function () {
-    crawlerOffTimed (0);
+$("#crawlerOffNow").on ('click', function () {
+    crawlerOnTimed (0);
+    off ();
 });
 
 $("#crawlerOff30m").on ('click', function () {
@@ -87,17 +152,52 @@ $("#crawlerOff3h").on ('click', function () {
     crawlerOffTimed (180);
 });
 
+
+$("#crawlerOnNow").on ('click', function () {
+    crawlerOffTimed (0);
+});
+
+$("#crawlerOn30m").on ('click', function () {
+    crawlerOnTimed (30);
+});
+
+$("#crawlerOn1h").on ('click', function () {
+    crawlerOnTimed (60);
+});
+
+$("#crawlerOn3h").on ('click', function () {
+    crawlerOnTimed (180);
+});
+
 $("#crawlerOn").on ("change", function () {
     var value = $("#crawlerOn").val ();
     console.log ("Crawler: "+value);
 
     chrome.storage.local.set ({"crawler": value});
-
-    if (value == "off")
-	chrome.runtime.sendMessage (
-	    /* ext_id= */"", 
-	    {type: "crawlerOff"}
-	);
+    off ();
 });
+
+$("#crawlIncognito").on ("change", function () {
+    var value = $("#crawlIncognito").prop ('checked');
+    console.log ("Incognito: "+value);
+    chrome.storage.local.set ({"crawlerIncognito": value ? "on" : "off" });
+});
+
+$("#crawlerSchedule").on ("change", function () {
+    var value = $("#crawlerSchedule").val ();
+    console.log ("crawlerSchedule: "+value);
+    chrome.storage.local.set ({"crawlerSchedule": value});
+});
+
+$("#crawlerHours input[type=checkbox]").on ("change", function (e) {
+    var input = e.target;
+    var on = $(input).prop ("checked") ? "on" : "off";
+    var data = {};
+    data[input.id] = on;
+    console.log (data);
+    chrome.storage.local.set (data);
+});
+
+
 
 })
