@@ -48,10 +48,19 @@
 	});	
     }
 
+    function ready (message, sender, reply)
+    {
+	if (sender.tab.incognito)
+	    return;
+
+	chrome.pageAction.show (sender.tab.id);
+    }
+
     function start ()
     {
 	cmn.setEventListeners ({
 	    "showSettings": showSettings,
+	    "ready": ready,
 	});
 
 	chrome.runtime.onInstalled.addListener (function (details) {

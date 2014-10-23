@@ -14,6 +14,7 @@
 	    tillDate.setTime (till);
 	    chrome.storage.local.set ({
 		crawlerOnUntil: tillDate.toString (),
+		crawlerOffUntil: "",
 	    });
 
 	    $("#crawlerOn").hide ();

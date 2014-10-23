@@ -8,9 +8,10 @@ $(function () {
     // updaters
     cmn.repeat (function () {
 	chrome.storage.local.get (["crawler", "crawlerOffUntil"], function (items) {
+	    console.log (items);
 	    if (!items.crawlerOffUntil || items.crawler == "off")
 	    {
-		$("crawlerOffUntil").hide ();
+		$("#crawlerOffUntil").hide ();
 		return;
 	    }
 
@@ -33,9 +34,9 @@ $(function () {
 
     cmn.repeat (function () {
 	chrome.storage.local.get (["crawler", "crawlerOnUntil"], function (items) {
-	    if (!items.crawlerOnUntil || items.crawler != "off")
+	    if (!items.crawlerOnUntil)
 	    {
-		$("crawlerOnUntil").hide ();
+		$("#crawlerOnUntil").hide ();
 		return;
 	    }
 
@@ -71,7 +72,7 @@ $(function () {
 	    {
 		$("#crawlerOffTmp").show ();
 		$("#crawlerOnTmp").hide ();
-		$("#crawlerOnUntil").hide ();
+//		$("#crawlerOnUntil").hide ();
 		$("#crawlerScheduleTable").show ();
 	    }
 	});
