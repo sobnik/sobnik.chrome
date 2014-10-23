@@ -22,16 +22,19 @@
     <http://www.gnu.org/licenses/>.
 */
 
-(function () {
+;(function () {
 
-    console.log ("avito");
+    console.log ("Loading avito");
 
-    // needs to stay in closure to be used by 'conv' methods below
-    var sob = sobnikApi ();
+    var sobnik = window.sobnik;
+    console.assert (sobnik, "Sobnik required");
+
+    var cmn = sobnik.require ("cmn");
+    var boards = sobnik.require ("boards");
 
     var types = "kvartiry|nedvizhimost|komnaty|doma_dachi_kottedzhi|zemelnye_uchastki|garazhi_i_mashinomesta|kommercheskaya_nedvizhimost";
 
-    var board = {
+    var avito = {
 	name: "avito.ru",
 
 	urls: [
@@ -91,7 +94,7 @@
 	    mark: function (row, ad) {
 		var html = "<span style='display:block;"
 		    +"float:left; margin:4px 0 0 0; padding: 0'>"
-		    +sob.marker (ad)+"</span>";
+		    +boards.marker (ad)+"</span>";
 		$(row).find ("h3").prepend (html);
 		return $(row).find("h3 span")[0];
 	    },
@@ -104,7 +107,7 @@
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
 			    +"float:left; margin:12px 0 0 0; padding: 0'>"
-			    +sob.marker (ad)+"</span>";
+			    +boards.marker (ad)+"</span>";
 			$(parent).prepend (html);
 			return $(parent).find("span")[0];
 		    },
@@ -114,7 +117,7 @@
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
 			    +"float:left; margin:4px 0 0 0; padding: 0'>"
-			    +sob.marker (ad)+"</span>";
+			    +boards.marker (ad)+"</span>";
 			$(parent).prepend (html);
 			return $(parent).find("span")[0];
 		    },
@@ -303,23 +306,23 @@
 			    var today = new Date ();
 			    var yesterday = new Date (today);
 			    yesterday.setDate (today.getDate () - 1);
-			    return sob.dateFmt (s
-						.replace ("сегодня", sob.dts (today))
-						.replace ("вчера", sob.dts (yesterday))
-						.replace (" янв.", ".01.2014")
-						.replace (" фев.", ".02.2014")
-						.replace (" мар.", ".03.2014")
-						.replace (" апр.", ".04.2014")
-						.replace (" мая", ".05.2014")
-						.replace (" июня", ".06.2014")
-						.replace (" июля", ".07.2014")
-						.replace (" авг.", ".08.2014")
-						.replace (" сен.", ".09.2014")
-						.replace (" окт.", ".10.2014")
-						.replace (" ноя.", ".11.2014")
-						.replace (" дек.", ".12.2014")
-						.replace (" в ", " ")
-					       );
+			    return boards.dateFmt (
+				s.replace ("сегодня", boards.dts (today))
+				    .replace ("вчера", boards.dts (yesterday))
+				    .replace (" янв.", ".01.2014")
+				    .replace (" фев.", ".02.2014")
+				    .replace (" мар.", ".03.2014")
+				    .replace (" апр.", ".04.2014")
+				    .replace (" мая", ".05.2014")
+				    .replace (" июня", ".06.2014")
+				    .replace (" июля", ".07.2014")
+				    .replace (" авг.", ".08.2014")
+				    .replace (" сен.", ".09.2014")
+				    .replace (" окт.", ".10.2014")
+				    .replace (" ноя.", ".11.2014")
+				    .replace (" дек.", ".12.2014")
+				    .replace (" в ", " ")
+			    );
 			}
 		    }
 		}
@@ -327,8 +330,7 @@
 	}
     };
 
-    sob.start (board);
-
-    console.log ("started");
+    window.sobnik.boards.avito = avito;
+    window.sobnik.boards.current = avito;
 
 } ());

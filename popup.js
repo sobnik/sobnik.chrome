@@ -1,6 +1,9 @@
 ;(function () {
 
-    var sobnik = sobnikApi ();
+    var sobnik = window.sobnik;
+    console.assert (sobnik, "Sobnik required");
+
+    var cmn = sobnik.require ("cmn");
 
     $(function () {
 
@@ -18,7 +21,7 @@
 	    
 	});
 
-	sobnik.getCrawlerAllowed (function (allowed) {
+	cmn.getCrawlerAllowed (function (allowed) {
 	    if (allowed)
 		$("#crawlerOn").hide ();
 	    else
