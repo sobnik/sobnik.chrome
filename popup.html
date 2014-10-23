@@ -2,6 +2,9 @@
 <head>
 <meta content="text/html; charset=UTF-8" http-equiv="content-type">
 <link href='http://fonts.googleapis.com/css?family=Open+Sans&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+<script src="jquery.js"></script>
+<script src="api.js"></script>
+<script src="popup.js"></script>
 </head>
 <body>
 
@@ -34,15 +37,42 @@ ul {
   color: #f00;
 }
 
+small {
+  color: #ccc;
+}
+
+button {
+  margin: 3px 0 3px 0;
+}
+
+.hidden {
+  display: none;
+}
+
+#crawlerOn {
+  margin-bottom: 10px;
+}
+
 </style>
 
 <div id="offer">
 
+<div id="crawlerOn">
+<strong>Сканирование выключено!</strong><br>
+<button id='crawlerOn30m'>Включить на полчаса</button><br>
+<small>Это поможет программе работать быстрее</small>
+</div>
+
+<strong id='crawlerOnThanks' class='hidden'>Спасибо!</strong>
+
+<div id='menu'>
 <strong>Меню</strong>
-<ul style='margin: 10px 0 10px 0'>
+<ul style='margin: 5px 0 10px 0'>
 <li><a href='http://sobnik.com/kak-rabotaet-sobnik.html' target='_blank'>Инструкция</a></li>
 <li><a href='settings.html' target='_blank'>Настройки</a></li>
 </ul>
+</div>
+
 <hr>
 
 <strong>S<span class='owner'>o</span>bnik</strong> активно развивается. Чтобы быть в курсе событий, подпишитесь на рассылку:

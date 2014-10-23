@@ -30,7 +30,10 @@ repeat (function () {
 	var till = new Date (items.crawlerOffUntil);
 	if (now.getTime () < till.getTime ())
 	{
-	    $("#crawlerOffUntilTime").html (till.toLocaleString ());
+	    var diff = (till.getTime () - now.getTime ()) / (60*1000);
+	    $("#crawlerOffUntilTime").html (
+		"на "+Number (diff).toFixed(0)+" минут, "
+		    +"до "+till.toLocaleString ());
 	    $("#crawlerOffUntil").show ();
 	}
 	else
@@ -52,7 +55,10 @@ repeat (function () {
 	var till = new Date (items.crawlerOnUntil);
 	if (now.getTime () < till.getTime ())
 	{
-	    $("#crawlerOnUntilTime").html (till.toLocaleString ());
+	    var diff = (till.getTime () - now.getTime ()) / (60*1000);
+	    $("#crawlerOnUntilTime").html (
+		"на "+Number (diff).toFixed(0)+" минут, "
+		    +"до "+till.toLocaleString ());
 	    $("#crawlerOnUntil").show ();
 	}
 	else
@@ -70,10 +76,12 @@ repeat (function () {
 	{
 	    $("#crawlerOffTmp").show ();
 	    $("#crawlerOnTmp").hide ();
+	    $("#crawlerOnUntil").hide ();
 	}
 	else
 	{
 	    $("#crawlerOffTmp").hide ();
+	    $("#crawlerOffUntil").hide ();
 	    $("#crawlerOnTmp").show ();
 	}
     });
@@ -83,6 +91,15 @@ repeat (function () {
     chrome.storage.local.get ("crawlerIncognito", function (items) {
 	var on = items.crawlerIncognito;
 	$("#crawlIncognito").prop ("checked", (on == "on") ? true : false);
+	if (on == "on")
+	    chrome.extension.isAllowedIncognitoAccess (function (allowed) {
+		if (!allowed)
+		    $("#crawlIncognitoWarning").show ();
+		else
+		    $("#crawlIncognitoWarning").hide ();
+	    });
+	else
+	    $("#crawlIncognitoWarning").hide ();
     });
 });
 

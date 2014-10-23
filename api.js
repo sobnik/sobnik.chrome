@@ -876,6 +876,7 @@ function sobnikApi ()
 	var to = null;
 	var cb = null;
 	var failures = 0;
+	var is_ready = false;
 
 	function callback ()
 	{
@@ -986,11 +987,13 @@ function sobnikApi ()
 
 	function ready (callback)
 	{
-	    if (tab == null)
+	    if (tab == null || is_ready)
 	    {
 		callback ();
 		return;
 	    }
+
+	    is_ready = true;
 
 	    // mark it as a crawler tab
 	    console.log ("starting crawler in tab", tab);
@@ -1010,17 +1013,53 @@ function sobnikApi ()
 	    console.log (url);
 	    cb = cback;
 	    clearTTL ();
+	    is_ready = false;
+
+	    var incognito = false;
 
 	    function doOpen ()
 	    {
 		// now, if no crawler tab found - go create one
 		if (tab == null)
-		{		
-		    chrome.tabs.create ({
-			url: url,
-			active: false,
-			selected: false
-		    }, startTab);
+		{
+		    var wid = null;
+		    function start ()
+		    {
+			chrome.tabs.create ({
+			    windowId: wid,
+			    url: url,
+			    active: false,
+			    selected: false,
+			}, startTab);
+		    }
+
+		    // search incognito window - use it by default
+		    chrome.windows.getAll (function (windows) {
+			if (chrome.runtime.lastError)
+			    console.log (chrome.runtime.lastError);
+
+			windows.forEach (function (w) {
+			    if (w.incognito && w.id)
+				wid = w.id;
+			});
+
+			// no incognito window found, but user
+			// requested incognito mode - open new window
+			if (incognito && wid == null)
+			    chrome.windows.create ({incognito: true}, function (w) {
+				console.log (w);
+				if (chrome.runtime.lastError)
+				    console.log (chrome.runtime.lastError);
+
+				// w == null if user disallowed
+				// incognito access while opening
+				if (w)
+				    wid = w.id;
+				start ();
+			    })
+			else
+			    start ();
+		    })
 		}
 		else
 		{
@@ -1031,8 +1070,11 @@ function sobnikApi ()
 		}
 	    }
 
-	    if (tab == null)
+	    function searchCrawlerTab ()
 	    {
+		// reset
+		tab = null;
+
 		// search crawler tab
 		chrome.windows.getAll ({populate: true}, function (ws) {
 
@@ -1047,13 +1089,21 @@ function sobnikApi ()
 
 				if (found && tab == null)
 				{
-				    tab = t.id;
-				    doOpen ();
+				    if (!t.incognito && incognito)
+				    {
+					// close our tab as we've obviously 
+					// switched to incognito crawling
+					chrome.tabs.remove (Number(t.id));
+				    }
+				    else
+				    {
+					tab = t.id;
+					doOpen ();
+				    }
 				}
 
 				if (count == 0 && tab == null)
 				    doOpen ();
-
 			    })
 			})
 		    })
@@ -1061,31 +1111,18 @@ function sobnikApi ()
 			doOpen ();
 		})
 	    }
-	    else
-	    {
-		chrome.tabs.executeScript (tab, {
-		    code: "document.getElementById ('"
-			+crawlerTabSignal+"') != null",
-		}, function (result) {
-		    if (chrome.runtime.lastError)
-		    {
-			tab = null;
-		    }
-		    else
-		    {
-			var found = false;
-			result.forEach (function (f) {
-			    if (f)
-				found = true;
-			});
-		    }
 
-		    if (!found)
-			tab = null;
-
-		    doOpen ();
-		})
-	    }
+	    // get settings and start
+	    chrome.storage.local.get ("crawlerIncognito", function (items) {
+		incognito = items.crawlerIncognito == "on";
+		if (incognito)
+		    chrome.extension.isAllowedIncognitoAccess (function (allowed) {
+			incognito = allowed;
+			searchCrawlerTab ();			
+		    });
+		else
+		    searchCrawlerTab ();
+	    });
 	}
 
 	return {
@@ -1095,6 +1132,85 @@ function sobnikApi ()
 	    ready: ready,
 	    getId: function () { return tab; },
 	}
+    }
+
+    function getCrawlerAllowed (callback)
+    {
+	var keys = ["crawler", 
+		    "crawlerOnUntil", 
+		    "crawlerOffUntil",
+		    "crawlerSchedule",
+		    "crawlerHour00",
+		    "crawlerHour01",
+		    "crawlerHour02",
+		    "crawlerHour03",
+		    "crawlerHour04",
+		    "crawlerHour05",
+		    "crawlerHour06",
+		    "crawlerHour07",
+		    "crawlerHour08",
+		    "crawlerHour09",
+		    "crawlerHour10",
+		    "crawlerHour11",
+		    "crawlerHour12",
+		    "crawlerHour13",
+		    "crawlerHour14",
+		    "crawlerHour15",
+		    "crawlerHour16",
+		    "crawlerHour17",
+		    "crawlerHour18",
+		    "crawlerHour19",
+		    "crawlerHour20",
+		    "crawlerHour21",
+		    "crawlerHour22",
+		    "crawlerHour23",
+		   ];
+
+	chrome.storage.local.get (keys, function (items) {	    
+
+	    var allowed = true;
+	    console.log ("Crawler settings", items);
+
+	    var now = new Date ();
+	    if (items.crawler == "off")
+	    {
+		allowed = false;
+		if (items.crawlerOnUntil)
+		{
+		    var till = new Date (items.crawlerOnUntil);
+		    allowed = now.getTime () < till.getTime ();
+		    console.log ("On till", till, allowed);
+		}
+
+		if (!allowed && items.crawlerSchedule != "off")
+		{
+		    var hour = ""+now.getHours ();
+		    if (hour.length < 2) hour = "0"+hour;
+		    allowed = items["crawlerHour"+hour] == "on";
+		    console.log ("Sched on hour", hour, allowed);
+		}
+	    }
+	    else
+	    {
+		allowed = true;
+		if (items.crawlerOffUntil)
+		{
+		    var till = new Date (items.crawlerOffUntil);
+		    allowed = now.getTime () > till.getTime ();
+		    console.log ("Off till", till, allowed);
+		}
+
+		if (allowed && items.crawlerSchedule == "off")
+		{
+		    var hour = ""+now.getHours ();
+		    if (hour.length < 2) hour = "0"+hour;
+		    allowed = items["crawlerHour"+hour] != "on";
+		    console.log ("Sched off hour", hour, allowed);
+		}
+	    }
+
+	    callback (allowed);
+	});
     }
 
     function createCrawler ()
@@ -1131,8 +1247,9 @@ function sobnikApi ()
 
 	    function get ()
 	    {
-		chrome.storage.local.get ("crawler", function (items) {
-		    if (items.crawler == "off")
+		getCrawlerAllowed (function (allowed) {
+
+		    if (!allowed)
 		    {
 			// retry later after the same delay
 			getJob ();
@@ -1142,14 +1259,13 @@ function sobnikApi ()
 			// get the job
 			call ("crawler/job", "POST", "", /* callback */null, {
 			    200: function (data) {
-//				console.log (data);
 				speedup ();
 				tab.open (data.Url, getJob);
 			    },
 			    204: retry
 			}, retry);
 		    }
-		})
+		});
 	    }
 
 	    later (d, get, retry);
@@ -1174,6 +1290,7 @@ function sobnikApi ()
 	marker: marker,
 	start: start,
 	crawler: createCrawler,
+	getCrawlerAllowed: getCrawlerAllowed,
     };
 
     return s;

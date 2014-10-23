@@ -107,10 +107,14 @@
 	    crawler.ready (function () {
 		reply ({type: "go"});
 	    });
-	}
 
-	// we'll reply asynchronously
-	return true;
+	    // we'll reply asynchronously
+	    return true;
+	}
+	else
+	{
+	    reply ({type: "go"});
+	}
     }
 
     function showSettings ()

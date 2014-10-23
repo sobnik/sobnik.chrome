@@ -85,10 +85,8 @@ small {
 <small>Если сканирование выключено, Sobnik не тратит ваш Интернет. Если включено &mdash; вы помогаете другим пользователям!</small>
 </div>
 
-<div class='hidden FIXME REMOVE'>
-
 <div id="crawlerOffUntil" class="hidden par">
-Временно выключено до <strong id="crawlerOffUntilTime"></strong>
+Временно выключено <strong id="crawlerOffUntilTime"></strong>
 <input type="button" id="crawlerOnNow" value="Отменить, включить сейчас" />
 </div>
 
@@ -100,7 +98,7 @@ small {
 </div>
 
 <div id="crawlerOnUntil" class="hidden par">
-Временно включено до <strong id="crawlerOnUntilTime"></strong>
+Временно включено <strong id="crawlerOnUntilTime"></strong>
 <input type="button" id="crawlerOffNow" value="Отменить, выключить сейчас" />
 </div>
 
@@ -111,20 +109,8 @@ small {
 <small>Можно включить сканирование на некоторое время</small>
 </div>
 
-</div><!-- FIXME remove -->
-
 </div>
 
-<div class='par group hidden FIXME REMOVE'>
-<input type="checkbox" id="crawlIncognito"><label for="crawlIncognito">Сканировать в режиме Инкогнито</label>
-<small>Рекомендуемый режим, снижает возможности браузера и досок объявлений по слежению за вами.
-</small>
-
-<div id="crawlIncognitoWarning" class="hidden par"><strong>Чтобы Sobnik мог работать в режиме инкогнито</strong>, перейдите в список установленных расширений (Меню браузера &rarr; Настройки, слева &mdash; "Расширения"), и включите галочку "Разрешить использование в режиме инкогнито" возле плагина Sobnik.
-</div>
-</div>
-
-<div class='par group hidden FIXME REMOVE'>
 <table border="0" cellspacing="0" cellpadding="0"><tr>
 <td>
 <select id="crawlerSchedule">
@@ -163,7 +149,16 @@ small {
 <input type="checkbox" id="crawlerHour23"><label for="crawlerHour23">23</label>
 </td>
 </tr></table>
+
+<div class='par group'>
+<input type="checkbox" id="crawlIncognito"><label for="crawlIncognito">Сканировать в режиме Инкогнито</label>
+<small>Рекомендуемый режим, снижает возможности браузера и досок объявлений по слежению за вами.
+</small>
+
+<div id="crawlIncognitoWarning" class="hidden par"><strong>Чтобы Sobnik мог работать в режиме Инкогнито</strong>, перейдите в список установленных расширений (Меню браузера &rarr; Настройки, слева &mdash; "Расширения"), и включите галочку <strong>&laquo;Разрешить использование в режиме инкогнито&raquo;</strong> возле плагина Sobnik.
 </div>
+</div>
+
 
 <hr>
 <h3>Других настроек пока нет</h3>
