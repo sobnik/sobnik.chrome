@@ -70,6 +70,13 @@
 		setToken ("");
 	    }
 
+	    function callback (data) 
+	    {
+		console.log ("Token", data);
+		requesting = false;
+		setToken (data.Token);
+	    }
+
 	    $.ajax ({
 		url: apiUrl + "token",
 		type: "POST",
@@ -77,10 +84,7 @@
 		headers: authHeaders (),
 		crossDomain: crossDomain,
 		statusCode: {
-		    200: function (data) {
-			console.log (data);
-			setToken (data.Token);
-		    },
+		    200: callback,
 		    204: errback
 		},
 		error: errback
