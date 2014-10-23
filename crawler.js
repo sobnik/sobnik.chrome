@@ -287,7 +287,7 @@
 	    // random delays 50-120 seconds
 	    var delays = [];
 	    for (var i = 0; i < 30; i++)
-		delays.push (cmn.rdelay (5, 12)); // FIXME
+		delays.push (cmn.rdelay (50, 120));
 
 	    // multiplier used for back-off
 	    var delayMult = 1.0;
@@ -399,7 +399,6 @@
 	    $("body").append (div);
 
 	    var settingsUrl = chrome.extension.getURL ("settings.html");
-	    // FIXME add link to instruction, and 'NOT AN ADD' phrase
 	    var html = "<div id='sobnikCrawlerInfoDiv' "
 		+ "style='position: fixed; left: 10%; top: 10%; "
 		+ "border: 1px solid #aaa; background:rgba(220,220,220,0.9); "
@@ -410,9 +409,12 @@
 		+ "<h1 style='font-size: 6em; text-align: center'>"
 		+ "Тут работает S<span style='color:#2c3'>o</span>bnik!"
 		+ "</h1>"
-		+ "<p style='font-size: larger'>У вас установлен <a href='http://sobnik.com' target='_blank'>плагин Sobnik</a>, который фильтрует риэлторов. Для работы плагину нужно анализировать содержимое объявлений. В день публикуется очень много объявлений, сбор их &mdash; ресурсоемкий процесс. Чтобы Sobnik мог оставаться <strong>бесплатным</strong>, теперь каждый пользователь сможет вносить вклад в общее дело.</p>"
+		+ "<h2 style='font-size: 2em; text-align: center'>"
+		+ "Это не реклама, пожалуйста, прочитайте это сообщение."
+		+ "</h2>"
+		+ "<p style='font-size: larger'>У вас установлен <a href='http://sobnik.com' target='_blank'>плагин Sobnik</a>, который фильтрует риэлторов. Для работы плагину нужно анализировать содержимое объявлений. В день публикуется очень много объявлений, сбор их &mdash; ресурсоемкий процесс. Чтобы Sobnik мог оставаться <strong>бесплатным</strong>, теперь каждый пользователь сможет вносить вклад в общее дело. Чтобы узнать подробности &mdash; прочитайте <a href='http://sobnik.com/kak-rabotaet-sobnik.html' target='_blank'>инструкцию</a>.</p>"
 		+ "<p style='font-size: larger; margin-top: 10px;'>В этой вкладке вашего браузера Sobnik будет сканировать объявления, и отправлять информацию в общую базу. Sobnik вам не помешает &mdash; он открывает не более одного объявления в минуту. Таким образом, без особых неудобств и усилий, Вы сможете помогать множеству людей по всей стране, а они в ответ будут помогать Вам.</p>"
-		+ "<p style='font-size: larger; margin-top: 10px;'>Вам стоит <a href='#' onclick=\"return false;\" id='sobnikShowSettings'>отключить</a> сбор объявлений, если у вас не безлимитный доступ в Интернет.</p>"
+		+ "<p style='font-size: larger; margin-top: 10px;'>Вам стоит отключить сбор объявлений в <a href='#' onclick=\"return false;\" id='sobnikShowSettings'>настройках</a>, если у вас не безлимитный доступ в Интернет. Там же можно настроить сканирование по расписанию.</p>"
 		+ "<p style='font-size: larger; margin-top: 10px;'>Если у Вас есть предложения или вопросы, пожалуйста, пишите в нашей группе <a href='https://vk.com/sobnik_com' target='_blank'>Вконтакте</a>, или на электронную почту <strong>sobnik.ru@gmail.com</strong></p>"
 		+ "<h2 style='font-size: 3em; text-align: center; margin-top: 30px;'>Спасибо!</h2>"
 		+ "</div>";

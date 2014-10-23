@@ -60,19 +60,19 @@ $(function () {
 	chrome.storage.local.get ("crawler", function (items) {
 	    var on = items.crawler;
 	    $("#crawlerOn").val ((on == "off") ? "off" : "on");
-	    if (on == "on")
-	    {
-		$("#crawlerOffTmp").show ();
-		$("#crawlerOnTmp").hide ();
-		$("#crawlerOnUntil").hide ();
-		$("#crawlerScheduleTable").show ();
-	    }
-	    else
+	    if (on == "off")
 	    {
 		$("#crawlerOffTmp").hide ();
 		$("#crawlerOffUntil").hide ();
 		$("#crawlerOnTmp").show ();
 		$("#crawlerScheduleTable").hide ();
+	    }
+	    else
+	    {
+		$("#crawlerOffTmp").show ();
+		$("#crawlerOnTmp").hide ();
+		$("#crawlerOnUntil").hide ();
+		$("#crawlerScheduleTable").show ();
 	    }
 	});
     });
