@@ -48,6 +48,7 @@
 	untrigger: [
 	    "div.alert p:contains(\"заблокировано\")",
 	    "div.alert p:contains(\"истёк\")",
+	    "div.alert p:contains(\"отклонено\")",
 	],
 
 	// FIXME move this to capture stuff

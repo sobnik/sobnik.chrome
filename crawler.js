@@ -45,6 +45,7 @@
 	    to: null,
 	    cb: null,
 	    failures: 0,
+	    is_ready: false,
 	}
 
 	function callback ()
@@ -210,6 +211,7 @@
 	    console.log (ad);
 	    self.ad = ad;
 	    self.cb = cback;
+	    self.is_ready = false;
 
 	    clearTTL ();
 
@@ -339,14 +341,15 @@
 
 	function isCrawlerTabReady (message, sender)
 	{
-	    return message.AdId == self.ad.AdId
-		&& self.tab && sender.tab && self.tab == sender.tab.id;
+//	    return message.AdId == self.ad.AdId
+	    return self.tab && sender.tab && self.tab == sender.tab.id;
 	}
 
 	function ready (message, sender, reply)
 	{
-	    if (isCrawlerTabReady (message, sender))
+	    if (!self.is_ready && isCrawlerTabReady (message, sender))
 	    {
+		self.is_ready = true;
 		console.log ("Crawler tab ready");
 		if (!reply ({type: "startCrawler"}))
 		    callback ();
