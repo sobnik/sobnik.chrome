@@ -126,7 +126,6 @@
 	}
 
 	server.sobnik (request, function (data) {
-
 	    if (data && data.Ads)
 		dataCallback (data.Ads);
 
