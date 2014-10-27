@@ -43,6 +43,8 @@
 	var token = "";
 	var requesting = false;
 
+	var abused = {};
+
 	function authHeaders ()
 	{
 	    var headers = {};
@@ -144,42 +146,82 @@
 	    return true;
 	}
 
-	function tabCall (method, data, callback)
-	{
-	    call (method, data, callback, function () {
-		callback ({error: true});
-	    });
-	    return true;
-	}
-
+	// public
 	function crawlerJob (callback, errback)
 	{
 	    call ("crawler/job", /* data= */null, callback, errback);
 	}
 
-	function sobnik (data, callback, errback)
+	// public
+	function sobnik (request, callback, errback)
 	{
-	    call ("sobnik", data, callback, errback);
+	    call ("sobnik", request, function (data) {
+		if (data && data.Ads)
+		{
+		    // over-mark abused ads
+		    for (var i = 0; i < data.Ads.length; i++)
+		    {
+			var id = data.Ads[i].AdId;
+			if (abused[id])
+			    data.Ads[i].Author = 2;
+		    }
+		}
+
+		callback (data);
+	    }, errback);
 	}
 
+	// public
 	function ads (data, callback, errback)
 	{
 	    call ("ads", data, callback, errback);
 	}
 
+	function errply (reply)
+	{
+	    return function () { reply ({error: true}); }
+	}
+
 	function onCrawlerJob (message, sender, reply)
 	{
-	    return tabCall ("crawler/job", /* data= */null, reply);
+	    crawlerJob (reply, errply (reply));
+	    // async reply
+	    return true;
 	}
 
 	function onSobnik (message, sender, reply)
 	{
-	    return tabCall ("sobnik", message.data, reply);
+	    sobnik (message.data, reply, errply (reply));
+	    // async reply
+	    return true;
 	}
 
 	function onAds (message, sender, reply)
 	{
-	    return tabCall ("ads", message.data, reply);
+	    ads (message.data, reply, errply (reply));
+	    // async reply
+	    return true;
+	}
+
+	function onAbuse (message, sender, reply)
+	{
+	    var id = message.data.id;
+	    abused[id] = {
+		id: id,
+		reason: message.data.reason,
+		time: (new Date ()).getTime (),
+	    }
+
+	    chrome.storage.local.set ({abuse: abused}, function () {
+		chrome.storage.local.get ("abuse", function (items) {
+		    console.log ("Abused", items);
+		});
+	    });
+
+	    // FIXME remove when we start sending to server
+	    reply ({});
+	    return false;
+	    //return tabCall ("ads", message.data, reply);
 	}
 
 	// public
@@ -189,9 +231,15 @@
 		"server.crawlerJob": onCrawlerJob,
 		"server.sobnik": onSobnik,
 		"server.ads": onAds,
+		"server.abuse": onAbuse,
 	    });
 
 	    getToken ();
+
+	    chrome.storage.local.get ("abuse", function (items) {
+		abused = items.abuse || {};
+		console.log ("Abused init", abused);
+	    });
 	}
 
 	window.sobnik.server.bg = {
@@ -214,9 +262,15 @@
 		/* options= */{}, 
 		function (response) {
 		    if (!response || response.error)
-			errback (response);
+		    {
+			if (errback)
+			    errback (response);
+		    }
 		    else
-			callback (response);
+		    {
+			if (callback)
+			    callback (response);
+		    }
 		});
 	}
 
@@ -238,10 +292,17 @@
 	    bgCall ("ads", request, callback, errback);
 	}
 
+	// public 
+	function abuse (id, reason)
+	{
+	    bgCall ("abuse", {id: id, reason: reason});
+	}
+
 	window.sobnik.server.tab = {
 	    crawlerJob: crawlerJob,
 	    sobnik: sobnik,
 	    ads: ads,
+	    abuse: abuse,
 	}
     }
 

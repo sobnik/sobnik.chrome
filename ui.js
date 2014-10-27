@@ -1,5 +1,5 @@
 /*  
-    tab.js - sobnik.chrome module
+    marker.js - sobnik.chrome module
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
     Copyright other contributors as noted in the AUTHORS file.
@@ -24,40 +24,39 @@
 
 ;(function () {
 
-    console.log ("Loading tab");
+    console.log ("Loading ui");
 
     var sobnik = window.sobnik;
     console.assert (sobnik, "Sobnik required");
 
     var cmn = sobnik.require ("cmn");
+    var server = sobnik.require ("server.tab");
     var marker = sobnik.require ("marker");
-    var crawler = sobnik.require ("crawler.tab");
     var board = sobnik.require ("boards/current");
-    var ui = sobnik.require ("ui");
 
-    function start () 
+    // public 
+    function start ()
     {
-	var id = board.url2id (location.href);
+	var reasons = board.abuseReasons;
 
-	chrome.runtime.sendMessage (
-	    /* ext_id= */"", 
-	    {type: "ready", AdId: id}, 
-	    /* options= */{}, 
-	    function (reply) {
-		console.log ("Bg confirms ready", reply);
-		if (reply && reply.type == "startCrawler")
-		{
-		    crawler.start ();
-		}
-		else
-		{
-		    marker.start ();
-		    ui.start ();
-		}
-	    });
+	$("#abuses span.abuse-link").on ('click', function () {
+	    var reasonId = $(this).attr ('data-id');
+	    var reason = reasons[reasonId];
+	    if (!reason)
+		console.log ("Unknown reason", reasonId);
+	    else
+		console.log ("Abuse", reasonId, reason);
+
+	    var id = board.url2id (location.href);
+	    console.assert (id, "Bad ad id "+location.href);
+
+	    // FIXME if reason agent ask why
+	    server.abuse (id, reason);
+	});
     }
 
-    // start the tab
-    start ();
-    
+    window.sobnik.ui = {
+	start: start,
+    }
+
 }) ();

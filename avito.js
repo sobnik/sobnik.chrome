@@ -37,6 +37,20 @@
     var avito = {
 	name: "avito.ru",
 
+	abuseReasons: {
+	    "64": "agent",
+	    "65": "let",
+	    "66": "sold",
+	    "79": "fake",
+	    "71": "spam",
+	    "72": "price",
+	    "73": "address",
+	    "74": "phone",
+	    "76": "contacts",
+	    "82": "crime",
+	    "77": "other",
+	},
+
 	urls: [
 	    "http[s]?://www.avito.ru/[^/]+/("+types+")/[^\\?]*_[\\d]+$",
 	    "http[s]?://www.avito.ru/[^/]+/("+types+")/[^\\?]*_[\\d]+#",
@@ -334,4 +348,4 @@
     window.sobnik.boards.avito = avito;
     window.sobnik.boards.current = avito;
 
-} ());
+}) ();
