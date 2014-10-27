@@ -47,6 +47,23 @@
 		   "marker.js", 
 		   "ui.js", 
 		   "tab.js"]
+	},
+	{
+	    "matches": ["http://www.cian.ru/*", "https://www.cian.ru/*"],
+	    "js": ["jquery.js", 
+		   "jsfeat-min.js", 
+		   "init.js",
+		   "cmn.js",
+		   "pimg.js",
+		   "boards.js", 
+		   "cian.js", 
+		   "capture.js", 
+		   "server.js", 
+		   "parser.js", 
+		   "crawler.js", 
+		   "marker.js", 
+		   "ui.js", 
+		   "tab.js"]
 	}
     ],
 

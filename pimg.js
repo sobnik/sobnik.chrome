@@ -163,7 +163,6 @@
 
 	console.log ("Photo text height: "+height);
 
-	// debug
 	if (false)
 	{
 	    for (var i = 0; i < blacks.length; i++)

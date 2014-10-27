@@ -255,7 +255,8 @@
 		    }
 		    else 
 		    {
-			captureItem (item.element);
+			// add delay to release some CPU
+			cmn.later (1000, captureItem (item.element));
 		    }
 		}
 		else

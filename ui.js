@@ -41,7 +41,7 @@
 
 	$("#abuses span.abuse-link").on ('click', function () {
 	    var reasonId = $(this).attr ('data-id');
-	    var reason = reasons[reasonId];
+	    var reason = reasons ? reasons[reasonId] : "";
 	    if (!reason)
 		console.log ("Unknown reason", reasonId);
 	    else

@@ -51,6 +51,9 @@
 		}
 		else
 		{
+		    if (sobnik.debug)
+			crawler.start ();
+
 		    marker.start ();
 		    ui.start ();
 		}

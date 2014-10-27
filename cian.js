@@ -38,41 +38,20 @@
 	name: "cian.ru",
 
 	urls: [
-	    "http[s]?://www.cian.ru/rent[^/]+/("+types+")/[\\d]+/$",
-	    "http[s]?://www.cian.ru/sale[^/]+/("+types+")/[\\d]+/$",
+	    "http[s]?://www.cian.ru/rent/("+types+")/\\d+/$",
+	    "http[s]?://www.cian.ru/sale/("+types+")/\\d+/$",
 	],
 
-	trigger: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
+	trigger: "span.object_descr_phones_row",
 
+	// FIXME find out
 	untrigger: [
-	    "div.alert p:contains(\"заблокировано\")",
-	    "div.alert p:contains(\"истёк\")",
-	    "div.alert p:contains(\"отклонено\")",
 	],
-
-	// FIXME move this to capture stuff
-	clicks: ["span.j-phone-show__insert span.btn__text"],
 
 	capture: {
-	    phoneImage: {
-		selector: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
-		attr: "src"
-	    },
 	    photoImage: {
-		//click: "div.gallery-item a.gallery-link img",
-		selector: "div.object_descr_images div.object_descr_images_w img.active",
+		selector: "div.object_descr_images div.object_descr_images_w a img",
 		attr: "src"
-	    }
-	},
-
-	watermark: {
-	    top_left: {
-		right: 105,
-		bottom: 40
-	    },
-	    bottom_right: {
-		right: 10,
-		bottom: 15
 	    }
 	},
 
@@ -126,7 +105,7 @@
 	},
 
 	url2id: function (url) {
-	    var id = url.match (/[^\?]*(\d+)//$/);
+	    var id = url.match (/\/(\d+)\/$/);
 //	    console.log ("Url "+url);
 //	    console.log (id);
 	    if (!id)
@@ -150,22 +129,6 @@
 		}
 	    },
 
-	    photoBig: {
-		selector: "div.object_descr_images div.object_descr_images_w a img",
-		attr: "src",
-		data: {
-		    photo: {},
-		}
-	    },
-
-	    /*photoOne: {
-		selector: "a.photo-job-img-link",
-		attr: "href",
-		data: {
-		    photo: {},
-		}
-	    },*/
-
 	    city: {
 		selector: "h1.object_descr_addr",
 		data: {
@@ -180,13 +143,20 @@
 		selector: "h1.object_descr_addr",
 		data: {
 		    street: {
-			rx: "[^,]+,\\s+(.+),\\s+(.+)",
+			rx: "[^,]+,\\s+(.+)",
 			rxi: 1
 		    },
+		}
+	    },
+
+	    // FIXME check cities w/o metro
+	    district: {
+		selector: "div.object_descr_metro",
+		data: {
 		    district: {
-			rx: "[^,]+,\\s+(.+),\\s+(.+)",
+			rx: "([^\\d]+)\\s?($|\\d+)",
 			rxi: 1
-		    }
+		    },
 		}
 	    },
 
@@ -253,7 +223,10 @@
 	    notes: {
 		selector: "div.object_descr_text",
 		data: {
-		    notes: {},
+		    notes: {
+			rx: "([\\s\\S]*)Телефоны:",
+			rxi: 1,
+		    },
 		},
 	    },
 
@@ -281,7 +254,7 @@
 		data: {
 		    lat: {
 			rx: ".*&pt=(\\d+.\\d+),(\\d+.\\d+),flag",
-			rxi: 1
+			rxi: 2
 		    }
 		}
 	    },
@@ -292,7 +265,7 @@
 		data: {
 		    lon: {
 			rx: ".*&pt=(\\d+.\\d+),(\\d+.\\d+),flag",
-			rxi: 2
+			rxi: 1
 		    }
 		}
 	    },
@@ -320,7 +293,7 @@
 				    .replace (" окт.", ".10.2014")
 				    .replace (" ноя.", ".11.2014")
 				    .replace (" дек.", ".12.2014")
-				    .replace (" в ", " ")
+				    .replace (", ", " ")
 			    );
 			}
 		    }

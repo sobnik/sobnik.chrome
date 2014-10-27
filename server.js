@@ -137,13 +137,16 @@
 
 	function call (method, data, callback, errback)
 	{
+	    if (sobnik.debug)
+		return;
+
 	    ajax (method, "POST", data, /* callback= */null, {
 		200: callback,
 		201: callback,
 		204: errback,
 	    }, errback);
 
-	    return true;
+	    return;
 	}
 
 	// public
@@ -212,11 +215,7 @@
 		time: (new Date ()).getTime (),
 	    }
 
-	    chrome.storage.local.set ({abuse: abused}, function () {
-		chrome.storage.local.get ("abuse", function (items) {
-		    console.log ("Abused", items);
-		});
-	    });
+	    chrome.storage.local.set ({abuse: abused});
 
 	    // FIXME remove when we start sending to server
 	    reply ({});
