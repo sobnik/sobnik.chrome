@@ -189,7 +189,6 @@
 	// we wait a while to let user navigate 
 	// somewhere else if this page was intermediate 	
 	var delay = 10000;
-
 	cmn.later (delay, function () {
 	    if (cmn.matchRxs (location.href, board.list.urls))
 	    {
@@ -203,7 +202,10 @@
 
     function startMarkPage () 
     {
-	$(window).on ('load', function () {
+	// FIXME on load is not triggered on cian :(
+	// or... do we not receive it bcs it's already loaded?
+	cmn.later (3000, function () {
+//	$(window).on ('load', function () {
 	    if (cmn.matchRxs (location.href, board.urls))
 	    {
 		console.log ("Marking page");

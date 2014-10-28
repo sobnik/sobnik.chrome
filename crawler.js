@@ -71,6 +71,7 @@
 	    }, function (result) {
 		var found = false;
 		var error = chrome.runtime.lastError;
+//		console.log ("Tab", t, error, result);
 		if (!error && result)
 		{
 		    result.forEach (function (f) {

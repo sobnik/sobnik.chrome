@@ -38,14 +38,14 @@
 	name: "cian.ru",
 
 	urls: [
-	    "http[s]?://www.cian.ru/rent/("+types+")/\\d+/$",
-	    "http[s]?://www.cian.ru/sale/("+types+")/\\d+/$",
+	    "http[s]?://www.cian.ru/rent/("+types+")/\\d+/($|#.*|\\?.*)",
+	    "http[s]?://www.cian.ru/sale/("+types+")/\\d+/($|#.*|\\?.*)",
 	],
 
 	trigger: "span.object_descr_phones_row",
 
-	// FIXME find out
 	untrigger: [
+	    "span.object_descr_warning:contains(\"снято\")"
 	],
 
 	capture: {
@@ -235,6 +235,22 @@
 		data: {
 		    author: {
 			conv: function () { return "agent"; }
+		    }
+		}
+	    },
+
+	    phone: {
+		selector: "strong.object_descr_phone_orig a",
+		attr: "href",
+		data: {
+		    phone: {
+			rx: "tel:(.*)",
+			rxi: 1,
+			conv: function (s) { 
+			    return s
+				.replace (/-/g, "")
+				.replace (/\s/g, ""); 
+			}
 		    }
 		}
 	    },

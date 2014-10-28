@@ -168,6 +168,7 @@
     {
 	for (var i = 0; i < rxs.length; i++)
 	{
+	    console.log (str, rxs[i], str.match(rxs[i]));
 	    if (str.match(rxs[i]) != null)
 		return true;
 	}
