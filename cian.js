@@ -48,16 +48,16 @@
 	    "span.object_descr_warning:contains(\"снято\")"
 	],
 
-	capture: {
+/*	capture: {
 	    photoImage: {
 		selector: "div.object_descr_images div.object_descr_images_w a img",
 		attr: "src"
 	    }
 	},
-
+*/
 	list: {
 	    // the row in the list
-	    rowSelector: "table.cat tr.cat[id^='tr_']",
+	    rowSelector: "table.cat tr[id^='tr_']",
 
 	    // container for the link to an ad (relative to rowSelector)
 	    hrefSelector: "td[id$='comment'] div a[onclick^='_gaq.push']", 
@@ -82,20 +82,20 @@
 	page: {
 	    marks: [
 		{
-		    selector: "div.item-page-content h1.h1",
+		    selector: "h1.object_descr_addr",
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
-			    +"float:left; margin:12px 0 0 0; padding: 0'>"
+			    +"float:left; margin:7px 0 0 -12px; padding: 0'>"
 			    +boards.marker (ad)+"</span>";
 			$(parent).prepend (html);
 			return $(parent).find("span")[0];
 		    },
 		},
 		{
-		    selector: "#seller",
+		    selector: "span.object_descr_phones_row",
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
-			    +"float:left; margin:4px 0 0 0; padding: 0'>"
+			    +"float:left; margin:10px 0 0 0; padding: 0'>"
 			    +boards.marker (ad)+"</span>";
 			$(parent).prepend (html);
 			return $(parent).find("span")[0];
@@ -230,12 +230,32 @@
 		},
 	    },
 
-	    author_agent: {
+	    author_agent1: {
 		selector: "span.object_descr_realtor_checked_text",
 		data: {
 		    author: {
 			conv: function () { return "agent"; }
 		    }
+		}
+	    },
+
+	    author_agent2: {
+		selector: "span.object_descr_td_l",
+		data: {
+		    author: {
+			conv: function (s) { 
+			    if (!s.match ("комиссия 0%"))
+				return "agent"; 
+			}
+		    }
+		}
+	    },
+
+	    user_id: {
+		selector: "span.object_descr_realtor_name_editable input",
+		attr: "value",
+		data: {
+		    user_id: {}
 		}
 	    },
 
@@ -297,18 +317,18 @@
 			    return boards.dateFmt (
 				s.replace ("сегодня", boards.dts (today))
 				    .replace ("вчера", boards.dts (yesterday))
-				    .replace (" янв.", ".01.2014")
-				    .replace (" фев.", ".02.2014")
-				    .replace (" мар.", ".03.2014")
-				    .replace (" апр.", ".04.2014")
+				    .replace (" января", ".01.2014")
+				    .replace (" февраля", ".02.2014")
+				    .replace (" марта", ".03.2014")
+				    .replace (" апреля", ".04.2014")
 				    .replace (" мая", ".05.2014")
 				    .replace (" июня", ".06.2014")
 				    .replace (" июля", ".07.2014")
-				    .replace (" авг.", ".08.2014")
-				    .replace (" сен.", ".09.2014")
-				    .replace (" окт.", ".10.2014")
-				    .replace (" ноя.", ".11.2014")
-				    .replace (" дек.", ".12.2014")
+				    .replace (" августа", ".08.2014")
+				    .replace (" сентября", ".09.2014")
+				    .replace (" октября", ".10.2014")
+				    .replace (" ноября", ".11.2014")
+				    .replace (" декабря", ".12.2014")
 				    .replace (", ", " ")
 			    );
 			}

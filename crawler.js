@@ -290,7 +290,7 @@
 	    // random delays 50-120 seconds
 	    var delays = [];
 	    for (var i = 0; i < 30; i++)
-		delays.push (cmn.rdelay (5, 12));
+		delays.push (cmn.rdelay (50, 120));
 
 	    // multiplier used for back-off
 	    var delayMult = 1.0;
@@ -444,7 +444,8 @@
 	// public
 	function start ()
 	{
-	    insertBanner ();
+	    if (!sobnik.debugCrawler)
+		insertBanner ();
 	    parser.start ();
 	}
 

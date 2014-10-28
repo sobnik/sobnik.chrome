@@ -85,12 +85,13 @@
     function gatherList ()
     {
 	var rows = $(board.list.rowSelector);
+	console.log (rows);
 	var map = {};
 	var regexp = board.list.pattern ? new RegExp(board.list.pattern) : null;
 	rows.each (function(i, row) {
 	    $(row).find (board.list.hrefSelector).each (function (i, a) {
 		var url = $(a).attr("href");
-//		console.log ("Url "+url+" rx "+regexp);
+		console.log ("Url "+url+" rx "+regexp);
 		if (regexp && !regexp.test(url))
 		    return;
 		if (url.indexOf (location.hostname) < 0)

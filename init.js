@@ -64,6 +64,7 @@
     window.sobnik = {
 	require: require,
 //	debug: true, 
+//	debugCrawler: true,
     }
 
 }) ();

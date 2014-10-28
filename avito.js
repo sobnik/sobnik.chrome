@@ -64,7 +64,7 @@
 	    "div.alert p:contains(\"истёк\")",
 	    "div.alert p:contains(\"отклонено\")",
 	],
-
+	
 	// FIXME move this to capture stuff
 	clicks: ["span.j-phone-show__insert span.btn__text"],
 
