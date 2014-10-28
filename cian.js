@@ -57,25 +57,25 @@
 
 	list: {
 	    // the row in the list
-	    rowSelector: "table.cat tbody tr.cat[id|='tr_']", 
+	    rowSelector: "table.cat tr.cat[id^='tr_']",
 
 	    // container for the link to an ad (relative to rowSelector)
-	    hrefSelector: "td[id$='comment'] div a[onclick|='_gaq.push']", 
+	    hrefSelector: "td[id$='comment'] div a[onclick^='_gaq.push']", 
 
 	    // links matching this pattern will be marked in the list
 	    pattern: ".*("+types+").*",
 
 	    // matching urls will be treated as a list of ads 
 	    urls: [
-		"http[s]?://www.cian.ru/[^/]+/("+types+")"
+		"http[s]?://www.cian.ru/cat.php"
 	    ],
 
 	    mark: function (row, ad) {
 		var html = "<span style='display:block;"
 		    +"float:left; margin:4px 0 0 0; padding: 0'>"
 		    +boards.marker (ad)+"</span>";
-		$(row).find ("h3").prepend (html);
-		return $(row).find("h3 span")[0];
+		$(row).find("td:eq(0)").prepend (html);
+		return $(row).find("td:eq(0) span")[0];
 	    },
 	},
 
