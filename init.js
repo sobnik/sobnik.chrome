@@ -63,7 +63,7 @@
 
     window.sobnik = {
 	require: require,
-	debug: true, // FIXME
+//	debug: true, 
     }
 
 }) ();

@@ -11,6 +11,7 @@
 
     "permissions": [
 	"http://sobnik.com/*",
+	"http://localhost:8081/*",
 	"http://www.avito.ru/*",
 	"https://www.avito.ru/*",
 	"tabs",

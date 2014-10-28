@@ -105,7 +105,7 @@
 	},
 
 	url2id: function (url) {
-	    var id = url.match (/\/(\d+)\/$/);
+	    var id = url.match ("/(\\d+)/($|#.*|\\?.*)");
 //	    console.log ("Url "+url);
 //	    console.log (id);
 	    if (!id)
