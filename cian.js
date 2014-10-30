@@ -60,7 +60,7 @@
 	    rowSelector: "table.cat tr[id^='tr_']",
 
 	    // container for the link to an ad (relative to rowSelector)
-	    hrefSelector: "td[id$='comment'] div a[onclick^='_gaq.push']", 
+	    hrefSelector: "td[id$='comment'] div a[target='_blank']", 
 
 	    // links matching this pattern will be marked in the list
 	    pattern: ".*("+types+").*",
@@ -230,16 +230,31 @@
 		},
 	    },
 
-	    author_agent1: {
-		selector: "span.object_descr_realtor_checked_text",
+	    author_named: {
+		selector: "span.object_descr_realtor_name",
 		data: {
 		    author: {
-			conv: function () { return "agent"; }
+			conv: function (s) { 
+			    if (!s.match ("ID:"))
+				return "agent";
+			}
 		    }
 		}
 	    },
 
-	    author_agent2: {
+	    author_age: {
+		selector: "span.object_descr_realtor_checked_text",
+		data: {
+		    author: {
+			conv: function (s) { 
+			    if (!s.match ("Новый пользователь"))
+				return "agent";
+			}
+		    }
+		}
+	    },
+
+	    commission: {
 		selector: "span.object_descr_td_l",
 		data: {
 		    author: {

@@ -8,7 +8,6 @@ $(function () {
     // updaters
     cmn.repeat (function () {
 	chrome.storage.local.get (["crawler", "crawlerOffUntil"], function (items) {
-	    console.log (items);
 	    if (!items.crawlerOffUntil || items.crawler == "off")
 	    {
 		$("#crawlerOffUntil").hide ();

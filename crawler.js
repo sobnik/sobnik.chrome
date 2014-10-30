@@ -290,7 +290,7 @@
 	    // random delays 50-120 seconds
 	    var delays = [];
 	    for (var i = 0; i < 30; i++)
-		delays.push (cmn.rdelay (50, 120));
+		delays.push (cmn.rdelay (50, 120)); 
 
 	    // multiplier used for back-off
 	    var delayMult = 1.0;
@@ -407,13 +407,15 @@
 		+ "style='position: fixed; left: 10%; top: 10%; "
 		+ "border: 1px solid #aaa; background:rgba(220,220,220,0.9); "
 		+ "width: 80%; height: 80%; z-index: 10000; "
-		+ "padding: 20px 40px'>"
+		+ "padding: 20px 40px; margin: 0; font-family: Arial'>"
 		+ "<a href='#' onclick=\"$('#sobnikCrawlerInfoDiv').hide (); return false;\" "
 		+ "style='position: absolute; top: 10px; right: 10px'>X</a>"
-		+ "<h1 style='font-size: 6em; text-align: center'>"
+		+ "<h1 style='margin: 20px 10px; padding: 0; font-size: 6em; "
+		+ "text-align: center;'>"
 		+ "Тут работает S<span style='color:#2c3'>o</span>bnik!"
 		+ "</h1>"
-		+ "<h2 style='font-size: 2em; text-align: center'>"
+		+ "<h2 style='font-size: 2em; text-align: center; "
+		+ "margin: 20px 10px; padding: 0; '>"
 		+ "Это не реклама, пожалуйста, прочитайте это сообщение."
 		+ "</h2>"
 		+ "<p style='font-size: larger'>У вас установлен <a href='http://sobnik.com' target='_blank'>плагин Sobnik</a>, который фильтрует риэлторов. Для работы плагину нужно анализировать содержимое объявлений. В день публикуется очень много объявлений, сбор их &mdash; ресурсоемкий процесс. Чтобы Sobnik мог оставаться <strong>бесплатным</strong>, теперь каждый пользователь сможет вносить вклад в общее дело. Чтобы узнать подробности &mdash; прочитайте <a href='http://sobnik.com/kak-rabotaet-sobnik.html' target='_blank'>инструкцию</a>.</p>"
