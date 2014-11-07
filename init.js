@@ -70,9 +70,9 @@
 	require: require,
 	isFunction: isFunction,
 //	debug: true, 
-	debugStartCrawler: true, // FIXME
-	debugStopMarker: true, // FIXME
-	debugPimg: true, // FIXME
+//	debugStartCrawler: true,
+//	debugStopMarker: true, 
+//	debugPimg: true, 
     }
 
 }) ();

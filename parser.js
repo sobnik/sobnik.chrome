@@ -141,7 +141,7 @@
 			setField (field, captured);
 
 		    var image = pimg.dataToImage (captured);
-//		    console.log ($(image));
+
 		    if (data.sizeSmall)
 		    {
 			var small = data.sizeSmall (image.width, image.height);
@@ -157,69 +157,9 @@
 			setField (field+"Height", height);
 		    }
 
-		    // FIXME add sizeSmall
-
 		    fulfill ();
 		})
 	    })
-	}
-
-	function clickAndCapture (field, data, e)
-	{
-	    var binding = "";
-	    if (data.bindingAttr)
-	    {
-		binding = "["+data.bindingAttr.selected+"='"
-		    +$(e).attr (data.bindingAttr.clicked)+"']";
-	    }
-
-	    console.log ("Binding", binding);
-	    cmn.click (e);
-	    return cmn.waitDomLoaded (data.selector + binding)
-		.then (function (selected) {
-		    return captureElement (field, data, selected);
-		})
-	}
-
-	function captureField (field, data)
-	{
-	    console.log ("captureField");
-	    return cmn.Promise (function (fulfill) {
-
-		var loop = cmn.AsyncLoop ();
-		if (data.click && $(data.click).length > 0)
-		{
-		    $(data.click).each (function (i, e) {
-			loop.next (function () {
-			    return clickAndCapture (field, data, e);
-			})
-		    })
-		}
-		else
-		{
-		    $(data.selector).each (function (i, e) {
-			loop.next (function () {
-			    // release some CPU by waiting
-			    return cmn.wait (1000).then (function () {
-				return captureElement (field, data, e);
-			    })
-			})
-		    })
-		}
-
-		// fulfill the outer promise when loop is done
-		loop.promise ().then (fulfill);
-	    })
-	}
-
-	function clickOnceAndCapture (field, data)
-	{
-	    var selector = data.click ? data.click : data.selector;
-	    cmn.click (data.clickOnce);
-	    return cmn.waitDomLoaded (selector)
-		.then (function () {
-		    return captureField (field, data);
-		});
 	}
 
 	function iterate (field, data)
@@ -241,7 +181,7 @@
 	    {
 		return data.iterator.start ().then (function () {
 		    return cmn.AsyncIterate (data.iterator, function (image) {
-			console.log (image);
+			return captureElement (field, data, image);
 		    });
 		});
 	    }
@@ -258,13 +198,7 @@
 		data = data.dynamic ();
 
 	    loop.next (function () {
-		iterate (f, data);
-		return;
-
-		if (data.clickOnce)
-		    return clickOnceAndCapture (f, data);
-		else
-		    return captureField (f, data);
+		return iterate (f, data);
 	    })
 	}
 

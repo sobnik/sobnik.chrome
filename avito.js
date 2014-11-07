@@ -85,11 +85,9 @@
 			    return width < 650 && height < 490;
 			},
 
-			iterator: {
-			},
+			iterator: {},
 		    }
 
-//		    var num = $("div.gallery-item a.gallery-link img").length;
 		    var zoomer = "td.big-picture a.j-zoom-gallery-link";
 		    var zoomable = $(zoomer).length > 0;
 		    var single = $("div.gallery-item a.gallery-link img").length == 0;
@@ -114,34 +112,35 @@
 
 			    var item = queue.shift ();
 			    if (single)
-				fulfill (true);
-			    else
 			    {
-				// take id of image from href
-				var href = $(item).attr ("href");
-				var rx = /\/(\d+).jpe?g/;
-				href = href.match (rx)[1];
-
-				// click the link
-				cmn.click (item);
-				cmn.waitCond (function () {
-
-				    // wait until image get's same id
-				    var src = $(image).attr ('src');
-				    src = src.match (rx);
-				    src = src.length ? src[1] : null;
-				    return src == href;
-				}).then (function () {
-
-				    // wait until image is loaded
-				    return cmn.waitDomLoaded (image);
-				}).then (function () {
-
-				    // now we're done!
-				    fulfill (true);
-				});
+				fulfill (true);
+				return;
 			    }
-			})
+
+			    // take id of image from href
+			    var href = $(item).attr ("href");
+			    var rx = /\/(\d+).jpe?g/;
+			    href = href.match (rx)[1];
+
+			    // click the link
+			    cmn.click (item);
+			    cmn.waitCond (function () {
+
+				// wait until image get's same id
+				var src = $(image).attr ('src');
+				src = src.match (rx);
+				src = src.length ? src[1] : null;
+				return src == href;
+			    }).then (function () {
+				
+				// wait until image is loaded
+				return cmn.waitDomLoaded (image);
+			    }).then (function () {
+				
+				// now we're done!
+				fulfill (true);
+			    });
+			});
 		    }
 
 		    data.iterator.value = function ()
@@ -173,58 +172,6 @@
 			}
 		    }
 
-/*
-			if (num <= 1)
-			{
-			    console.log ("Single big photo");
-
-			    data.next = function () {
-				$("div.photo-slide img.active")
-
-				return true;
-			    }
-
-			    data.value = function () {
-				return $("div.photo-slide img.active");
-			    }
-
-			    // FIXME remove
-			    data.clickOnce = 
-				"td.big-picture a.j-zoom-gallery-link";
-			    data.selector = 
-				"div.photo-slide img.active";
-			}
-			else
-			{
-			    console.log ("Many big photos");
-			    
-
-			    data.clickOnce = 
-				"td.big-picture a.j-zoom-gallery-link";
-			    data.click = 
-				"div.b-zoom-gallery a.gallery-link";
-			    data.wait = 
-				"div.b-zoom-gallery a.gallery-link.active";
-			    data.bindingAttr = {
-				clicked: "href",
-				selected: "src",
-			    }
-			    data.selector = 
-				"div.photo-slide img.active";
-			}
-		    }
-		    else
-		    {
-			console.log ("Single small or no photo");
-			data.next = function () {
-			    return num > 0;
-			}
-
-			data.value = function () {
-			    return $("td.big-picture div.picture-aligner img.active");
-			}
-		    }
-*/
 		    console.log ("Capture settings", data);
 		    return data;
 		},

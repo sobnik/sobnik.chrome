@@ -345,14 +345,15 @@
 			last = ready
 			// process item			
 			    .then (function (data) {
-				processor (iterator.value ());
+				// processor returns a promise
+				return processor (iterator.value ());
 			    })
 			// get next item
 			    .then (next);
 		    }
 		    else
 		    {
-			// done!
+			console.log ("done");
 			fulfill ();
 		    }
 		})
