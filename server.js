@@ -35,10 +35,11 @@
     {
 	console.log ("Loading server.bg");
 
-	var apiUrl = "http://sobnik.com/api/";
-	var crossDomain = false;
-//	var apiUrl = "http://localhost:8081/api/";
-//	var crossDomain = true;
+//	var apiUrl = "http://sobnik.com/api/";
+//	var crossDomain = false;
+// FIXME
+	var apiUrl = "http://localhost:8081/api/";
+	var crossDomain = true;
 
 	var token = "";
 	var requesting = false;

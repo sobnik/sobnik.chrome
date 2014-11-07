@@ -56,8 +56,19 @@
     // public
     function marker (a) 
     {
-	var color = a.Author ? "red" : "#1e2";
-	var title = a.Author ? "Посредник" : "Собственник";
+	var color = "#1e2"; // owner
+	var title = "Собственник";
+	if (a.Author == 3)
+	{
+	    color = "yellow";
+	    title = "Проверьте фото";
+	}
+	else if (a.Author != 0)
+	{
+	    color = "red";
+	    title = "Посредник";
+	}
+
 	return "<div title='"+title+"' style='display:block; "
 	    + "margin-right: 2px;"
 	    + "height: 12px; width: 12px; line-height: 12px; "

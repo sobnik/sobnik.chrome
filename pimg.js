@@ -30,13 +30,19 @@
     console.assert (sobnik, "Sobnik required");
     
     // public
-    function textHeight (board, data) 
+    function dataToImage (data)
     {
 	// no matter what image format we choose, browser gets it right
 	// but don't remove /jpeg - it won't work!
 	var dataUrl = "data:image/jpeg;base64,"+data;
 	var img = document.createElement ('img');
 	$(img).attr ("src", dataUrl);
+	return img;
+    }
+
+    // public
+    function textHeight (board, img) 
+    {
 
 	var canvas = document.createElement ('canvas');
 	canvas.width = img.width;
@@ -163,7 +169,7 @@
 
 	console.log ("Photo text height: "+height);
 
-	if (false)
+	if (sobnik.debugPimg)
 	{
 	    for (var i = 0; i < blacks.length; i++)
 	    {
@@ -188,6 +194,7 @@
     }
 
     window.sobnik.pimg = {
+	dataToImage: dataToImage,
 	textHeight: textHeight,
     }
 

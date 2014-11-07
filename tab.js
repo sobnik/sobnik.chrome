@@ -51,13 +51,14 @@
 		}
 		else
 		{
-		    if (sobnik.debugCrawler)
+		    if (sobnik.debugStartCrawler)
 			crawler.start ();
 
-		    marker.start ();
+		    if (!sobnik.debugStopMarker)
+			marker.start ();
 		    ui.start ();
 		}
-	    });
+	    })
     }
 
     // start the tab

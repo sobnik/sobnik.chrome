@@ -39,7 +39,7 @@
 	{
 	    function parse (data) 
 	    {
-		//	    console.log (message.what);
+		console.log ("Capture ", message.what);
 		var result = {};
 		for (var item in message.what) 
 		{

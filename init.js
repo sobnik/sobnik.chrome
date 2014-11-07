@@ -27,8 +27,13 @@
     console.log ("Initializing sobnik");
     console.assert (!("sobnik" in window), "Sobnik already initialized");
 
+    RSVP.on ('error', function (reason) {
+	console.assert (false, reason);
+    })
+
     // http://stackoverflow.com/questions/5999998/how-can-i-check-if-a-javascript-variable-is-function-type
     // damn black magic
+    // public
     function isFunction (f) 
     {
 	var getType = {};
@@ -63,8 +68,11 @@
 
     window.sobnik = {
 	require: require,
+	isFunction: isFunction,
 //	debug: true, 
-//	debugCrawler: true,
+	debugStartCrawler: true, // FIXME
+	debugStopMarker: true, // FIXME
+	debugPimg: true, // FIXME
     }
 
 }) ();

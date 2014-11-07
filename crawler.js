@@ -45,7 +45,8 @@
 	    to: null,
 	    cb: null,
 	    failures: 0,
-	    is_ready: false,
+	    isReady: false,
+	    forceNewTab: false,
 	}
 
 	function callback ()
@@ -60,11 +61,14 @@
 	    if (self.to != null)
 		clearTimeout (self.to);
 	    self.to = null;
-	    self.failures = 0;
 	}
 
 	function checkTab (t, callback)
 	{
+	    // executeScript might fail silently w/o calling
+	    // the callback. I don't know how to reproduce that,
+	    // but it may happen and will block the whole process
+	    // w/o proper handling.
 	    chrome.tabs.executeScript (t, {
 		code: "document.getElementById ('"
 		    +crawlerTabSignal+"') != null",
@@ -115,21 +119,40 @@
 	    });
 	}
 
+	function startTTL ()
+	{
+	    if (self.to != null)
+		clearTTL ();
+
+	    // killer
+	    var ttl = 300000; // ms, 300 sec
+	    self.to = cmn.later (ttl, function () {
+		self.failures++;
+		console.log ("TTL expired", self.failures);
+		if (self.tab == null)
+		{
+		    // no tab was opened, why?
+		    // we should not search the crawler tab next time here
+		    // as our tab might have stuck and not responding
+		    self.forceNewTab = true;
+		    console.log ("Crawler tab stuck? Forcing new tab");
+		}
+
+		if (self.failures > 2)
+		{
+		    self.failures = 0;
+		    close ();
+		}
+		else
+		{
+		    callback ();
+		}
+	    });
+	}
+
 	function startTab (t) 
 	{
-	    var ttl = 300000; // ms, 300 sec
 	    self.tab = t.id;
-
-	    // start killer
-	    self.to = cmn.later (ttl, function () {
-		if (self.tab != null)
-		    self.failures++;
-		console.log ("TTL expired", self.failures);
-		if (self.failures > 2)
-		    close ();
-		else
-		    callback ();
-	    });
 
 	    if (chrome.runtime.lastError)
 		console.log (chrome.runtime.lastError);
@@ -151,8 +174,16 @@
 
 	function searchCrawlerTab (incognito, callback)
 	{
+	    console.log ("searchCrawlerTab");
+
 	    // reset
 	    self.tab = null;
+	    if (self.forceNewTab)
+	    {
+		self.forceNewTab = false;
+		callback ();
+		return;
+	    }
 
 	    // search crawler tab
 	    chrome.windows.getAll ({populate: true}, function (ws) {
@@ -212,14 +243,20 @@
 	    console.log (ad);
 	    self.ad = ad;
 	    self.cb = cback;
-	    self.is_ready = false;
+	    self.isReady = false;
 
-	    clearTTL ();
+	    // Start killer immediately.
+	    // Somewhere there may be a failure that will stop the whole
+	    // bg process (i.e. executeScript may fail silently).
+	    // So, TTL now works for any kind of failures and will restart 
+	    // crawler, hopefully.
+	    startTTL ();
 
 	    var incognito = false;
 
 	    function doOpen ()
 	    {
+		console.log ("doOpen");
 		// now, if no crawler tab found - go create one
 		if (self.tab == null)
 		{
@@ -290,7 +327,7 @@
 	    // random delays 50-120 seconds
 	    var delays = [];
 	    for (var i = 0; i < 30; i++)
-		delays.push (cmn.rdelay (50, 120)); 
+		delays.push (cmn.rdelay (5, 12));  // FIXME
 
 	    // multiplier used for back-off
 	    var delayMult = 1.0;
@@ -348,9 +385,9 @@
 
 	function ready (message, sender, reply)
 	{
-	    if (!self.is_ready && isCrawlerTabReady (message, sender))
+	    if (!self.isReady && isCrawlerTabReady (message, sender))
 	    {
-		self.is_ready = true;
+		self.isReady = true;
 		console.log ("Crawler tab ready");
 		if (!reply ({type: "startCrawler"}))
 		    callback ();
@@ -406,7 +443,7 @@
 	    var html = "<div id='sobnikCrawlerInfoDiv' "
 		+ "style='position: fixed; left: 10%; top: 10%; "
 		+ "border: 1px solid #aaa; background:rgba(220,220,220,0.9); "
-		+ "width: 80%; height: 80%; z-index: 10000; "
+		+ "width: 80%; height: 80%; z-index: 100000; "
 		+ "padding: 20px 40px; margin: 0; font-family: Arial'>"
 		+ "<a href='#' onclick=\"$('#sobnikCrawlerInfoDiv').hide (); return false;\" "
 		+ "style='position: absolute; top: 10px; right: 10px'>X</a>"

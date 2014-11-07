@@ -116,16 +116,159 @@
 	);
     }
 
-    function imageLoaded (img)
+    function gatherCapture (ad, callback)
     {
-	// http://www.sajithmr.me/javascript-check-an-image-is-loaded-or-not/
-	if (!img.complete)
-            return false;
 
-	if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0)
-            return false;
+	function captureElement (field, data, e)
+	{
+	    function setField (name, value)
+	    {
+		if (!ad.Fields[name])
+		    ad.Fields[name] = [];
+		ad.Fields[name] = ad.Fields[name].concat (""+value);
+	    }
 
-	return true;
+	    // FIXME move this promise to capture module implementation
+	    // capture.start should return a promise itself
+	    return cmn.Promise (function (fulfill) {
+		var what = {};
+		what[field] = $(e).attr (data.attr || "src");
+
+		capture.start (what, function (captured) {
+    
+		    captured = captured[field];
+		    if (!data.dropImage)
+			setField (field, captured);
+
+		    var image = pimg.dataToImage (captured);
+//		    console.log ($(image));
+		    if (data.sizeSmall)
+		    {
+			var small = data.sizeSmall (image.width, image.height);
+			console.log ("Image size small", small);
+			setField (field+"SizeSmall", small);
+		    }
+
+		    if (data.detectText)
+		    {
+			var height = pimg.textHeight (
+			    board, image);
+			// FIXME make it TextHeight after server is upgraded
+			setField (field+"Height", height);
+		    }
+
+		    // FIXME add sizeSmall
+
+		    fulfill ();
+		})
+	    })
+	}
+
+	function clickAndCapture (field, data, e)
+	{
+	    var binding = "";
+	    if (data.bindingAttr)
+	    {
+		binding = "["+data.bindingAttr.selected+"='"
+		    +$(e).attr (data.bindingAttr.clicked)+"']";
+	    }
+
+	    console.log ("Binding", binding);
+	    cmn.click (e);
+	    return cmn.waitDomLoaded (data.selector + binding)
+		.then (function (selected) {
+		    return captureElement (field, data, selected);
+		})
+	}
+
+	function captureField (field, data)
+	{
+	    console.log ("captureField");
+	    return cmn.Promise (function (fulfill) {
+
+		var loop = cmn.AsyncLoop ();
+		if (data.click && $(data.click).length > 0)
+		{
+		    $(data.click).each (function (i, e) {
+			loop.next (function () {
+			    return clickAndCapture (field, data, e);
+			})
+		    })
+		}
+		else
+		{
+		    $(data.selector).each (function (i, e) {
+			loop.next (function () {
+			    // release some CPU by waiting
+			    return cmn.wait (1000).then (function () {
+				return captureElement (field, data, e);
+			    })
+			})
+		    })
+		}
+
+		// fulfill the outer promise when loop is done
+		loop.promise ().then (fulfill);
+	    })
+	}
+
+	function clickOnceAndCapture (field, data)
+	{
+	    var selector = data.click ? data.click : data.selector;
+	    cmn.click (data.clickOnce);
+	    return cmn.waitDomLoaded (selector)
+		.then (function () {
+		    return captureField (field, data);
+		});
+	}
+
+	function iterate (field, data)
+	{
+	    if (data.selector)
+	    {
+		var loop = cmn.AsyncLoop ();
+		$(data.selector).each (function (i, e) {
+		    loop.next (function () {
+			// release some CPU by waiting
+			return cmn.wait (1000).then (function () {
+			    return captureElement (field, data, e);
+			});
+		    });
+		});
+		return loop.promise ();
+	    }
+	    else
+	    {
+		return data.iterator.start ().then (function () {
+		    return cmn.AsyncIterate (data.iterator, function (image) {
+			console.log (image);
+		    });
+		});
+	    }
+	}
+
+	var loop = cmn.AsyncLoop ();
+	for (var field in board.capture)
+	{
+	    // let each of elements stay in their closures
+	    var f = field;
+	    var data = board.capture[f];
+
+	    if (data.dynamic)
+		data = data.dynamic ();
+
+	    loop.next (function () {
+		iterate (f, data);
+		return;
+
+		if (data.clickOnce)
+		    return clickOnceAndCapture (f, data);
+		else
+		    return captureField (f, data);
+	    })
+	}
+
+	return loop.promise ();
     }
 
     function gather () 
@@ -141,200 +284,47 @@
 
 	ad.Fields = gatherFields (board.fields);
 
-	function post (data) 
+	function post () 
 	{
-	    console.log (data);
-	    server.ads (data, function () {
-		done ();
-	    });
-	};
-
-	function setField (name, value)
-	{
-	    if (!ad.Fields[name])
-		ad.Fields[name] = [];
-	    ad.Fields[name] = ad.Fields[name].concat (""+value);
-	}
-
-	function callCapture (what, callback) 
-	{
-	    capture.start (what, function (captured) {
-//		console.log (captured);
-		for (var item in captured)
-		{
-		    // FIXME work out this special case
-		    if (item == 'phoneImage')
-		    {
-			setField (item, captured[item]);
-		    }
-		    else
-		    {
-			var height = pimg.textHeight (
-			    board, captured[item]);
-			item += "Height";
-			setField (item, height);
-		    }
-		}
-
-		callback ();
-	    });
+	    console.log (ad);
+	    server.ads (ad, done);
 	}
 
 	if (board.capture)
 	{
-	    var queue = [];
-	    for (var item in board.capture)
-	    {
-		var part = board.capture[item];
-		if (part.click && $(part.click).length > 0)
-		{
-		    $(part.click).each (function (i, e) {
-			var p = {
-			    name: item,
-			    click: e,
-			    selector: part.selector,
-			    attr: part.attr
-			}
-			queue.push (p);
-		    });
-		}
-		else
-		{
-		    $(part.selector).each (function (i, e) {
-			var p = {
-			    name: item,
-			    element: e,
-			    attr: part.attr
-			}
-			queue.push (p);
-		    });
-		}
-	    }
-
-	    var what = {};
-	    function captureNext ()
-	    {
-		if (queue.length > 0)
-		{
-		    var item = queue.shift ();
-
-		    function captureItem (e) 
-		    {
-			var what = {};
-			what[item.name] = $(e).attr (item.attr);
-			callCapture (what, captureNext);
-		    }
-
-		    if (item.click)
-		    {
-			console.log ("clicking", item.click);
-			$(item.click).trigger ('click');
-			function waitImage ()
-			{
-			    // wait for image to appear on page
-			    cmn.later (1000, function () {
-				console.log ("waiting", $(item.selector));
-				if (!$(item.selector).length)
-				    // wait more
-				    waitImage ();
-				else
-				{
-				    // wait until it's loaded
-				    var img = $(item.selector)[0];
-				    if (imageLoaded (img))
-					captureItem (img);
-				    else
-					$(img).on ('load', function () {
-					    captureItem (img);
-					});
-				}
-			    });
-			}
-
-			waitImage ();
-		    }
-		    else 
-		    {
-			// add delay to release some CPU
-			cmn.later (1000, function () {
-			    captureItem (item.element)
-			});
-		    }
-		}
-		else
-		{
-		    post (ad);
-		}
-	    }
-
-	    captureNext ();
+	    gatherCapture (ad)
+		.then (post);
 	}
 	else
 	{
-	    post (ad);
-	}
-    }
-
-    function findTrigger (selectors, callback) 
-    {
-	var $trigger = [];
-	if (Array.isArray (selectors))
-	{
-	    for (var i = 0; $trigger.length == 0 && i < selectors.length; i++)
-		$trigger = $(selectors[i]);
-	}
-	else
-	{
-	    $trigger = $(selectors);
+	    post ();
 	}
 
-	if ($trigger.length == 0)
-	{
-	    cmn.later (1000, function () {
-		findTrigger (selectors, callback);
-	    });
-	}
-	else
-	{
-	    if ($trigger.attr('src'))
-	    {
-		$trigger.on ('load', callback);
-	    }
-	    else
-	    {
-		cmn.later (3000, callback);
-	    }
-	}
     }
 
     function parse () 
     {
 	if (board.clicks)
-	{
-	    for (var i = 0; i < board.clicks.length; i++)
-	    {
-		console.log ("click "+board.clicks[i]);
-		$(board.clicks[i]).trigger ("click");
-	    }
-	}
+	    cmn.click (board.clicks);
 	
 	console.log ("trigger "+board.trigger);
-	findTrigger (board.trigger, function () { gather (); });
+	cmn.waitDomLoaded (board.trigger)
+	    .then (cmn.wait (3000)) // FIXME why?
+	    .then (gather);
 
 	if (board.untrigger)
 	{
 	    console.log ("untrigger "+board.untrigger);
-	    findTrigger (board.untrigger, function () { 
-		console.log ("cancelled");
-		done (); 
-	    });
+	    cmn.waitDomLoaded (board.untrigger)
+		.then (done);
 	}
     }
 
     // public
     function startParse ()
     {
-	cmn.later (cmn.rdelay (2, 8), function () {
+	function start () 
+	{
 	    var loc = location.href;
 	    // if current page matches pattern - start parser
 	    for (var i = 0; i < board.urls.length; i++)
@@ -351,7 +341,10 @@
 	    // nothing matched
 	    console.log ("Not parsing");
 	    done ();
-	})
+	}
+
+	cmn.wait (cmn.rdelay (2, 8))
+	    .then (start);
     }
 
     sobnik.parser = {

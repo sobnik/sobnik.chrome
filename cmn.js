@@ -200,14 +200,224 @@
 	});
     }
 
+    // public
+    function Promise (fn)
+    {
+	return new RSVP.Promise (fn);
+    }
+
+    // public
+    function wait (ms)
+    {
+	return Promise (function (fulfill) {
+	    later (ms, fulfill);
+	})
+    }
+
+    function imageLoaded (img)
+    {
+	// http://www.sajithmr.me/javascript-check-an-image-is-loaded-or-not/
+	if (!img.complete)
+            return false;
+
+	if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0)
+            return false;
+
+	return true;
+    }
+
+    // public
+    function waitCond (cond)
+    {
+	return Promise (function (fulfill) {
+	    function test ()
+	    {
+		if (cond ())
+		    fulfill ();
+		else
+		    later (1000, test);
+	    }
+	    
+	    // start it
+	    test ();
+	})
+    }
+
+    // public
+    function waitDomLoaded (s)
+    {
+	return Promise (function (fulfill) {
+	    function findDom (selectors) 
+	    {
+		var $dom = [];
+		if (!Array.isArray (selectors))
+		    selectors = [selectors];
+
+		for (var i = 0; !$dom.length && i < selectors.length; i++)
+		    $dom = $(selectors[i]);
+
+		if (!$dom.length)
+		{
+		    // retry
+		    later (1000, function () {
+			findDom (selectors);
+		    })
+		}
+		else
+		{
+		    function done ()
+		    {
+			fulfill ($dom[0]);
+		    }
+
+		    if ($dom.attr ('src'))
+		    {
+			// maybe wait until loaded?
+			if (imageLoaded ($dom[0]))
+			    done ();
+			else
+			    $dom.on ('load', done);
+			// FIXME what if it doesn't load? 
+			// reject should be called in that case
+		    }
+		    else
+		    {
+			done ();
+		    }
+		}
+	    }
+
+	    findDom (s);
+	})
+    }
+
+    // public
+    function click (objects, type)
+    {
+	if (!Array.isArray (objects))
+	    objects = [objects];
+
+	objects.forEach (function (o) {
+	    console.log ("clicking", $(o));
+
+	    // emulation of event
+	    var event = new MouseEvent (type ? type : 'click', {
+		'view': window,
+		'bubbles': true,
+		'cancelable': true
+	    });
+
+	    // dispatch
+	    $(o).each (function (i, e) {
+		e.dispatchEvent (event);
+	    });
+	})
+    }
+
+    // public
+    function AsyncIterate (iterator, processor)
+    {
+	var last = null;
+	return Promise (function (fulfill) {
+	    function next ()
+	    {
+		// request next item as a promise
+		var item = iterator.next ();
+		if (!item)
+		{
+		    // empty iterator
+		    fulfill ();
+		    return;
+		}
+
+		// append to last promise
+		if (last)
+		    // NOTE: you cannot 'then' a promise, 
+		    // only a func that returns a promise
+		    last = last.then (function () { return item; });
+		else
+		    last = item;
+
+		// when item is ready
+		var ready = last.then (function (found) {
+		    if (found)
+		    {
+			last = ready
+			// process item			
+			    .then (function (data) {
+				processor (iterator.value ());
+			    })
+			// get next item
+			    .then (next);
+		    }
+		    else
+		    {
+			// done!
+			fulfill ();
+		    }
+		})
+	    }
+
+	    // start it
+	    next ();
+	})
+    }
+
+    // public
+    function AsyncLoop ()
+    {
+	var last = null;
+	return {
+
+	    next: function (promiseCreator)
+	    {
+		if (last)
+		    last = last.then (promiseCreator);
+		else
+		    last = Promise (function (fulfill) {
+			fulfill (promiseCreator ());
+		    })
+	    },
+
+	    promise: function ()
+	    {
+		if (!last)
+		    return Promise (function (fulfill) {
+			fulfill ();
+		    })
+		else
+		    return last;
+	    }
+	}
+    }
+
+    function Now (o)
+    {
+	return Promise (function (fulfill) {
+	    if (sobnik.isFunction (o))
+		fulfill (o ());
+	    else
+		fulfill (o);
+	})
+    }
+
     sobnik.cmn = {
 	zpad: zpad,
 	later: later,
+	wait: wait,
 	repeat: repeat,
 	rdelay: rdelay,
 	matchRxs: matchRxs,
+	waitDomLoaded: waitDomLoaded,
+	waitCond: waitCond,
+	click: click,
 	setEventListeners: setEventListeners,
 	getCrawlerAllowed: getCrawlerAllowed,
+
+	Promise: Promise,
+	AsyncLoop: AsyncLoop,
+	AsyncIterate: AsyncIterate,
+	Now: Now,
     }
 
 }) ();

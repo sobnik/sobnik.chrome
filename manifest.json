@@ -11,6 +11,7 @@
 
     "permissions": [
 	"http://sobnik.com/*",
+	"http://localhost:8081/*",
 	"http://www.avito.ru/*",
 	"https://www.avito.ru/*",
 	"http://www.cian.ru/*",
@@ -23,49 +24,58 @@
     "options_page": "settings.html",
 
     "background": {
-	"scripts": ["jquery.js", 
-		    "init.js",
-		    "cmn.js",
-		    "server.js", 
-		    "crawler.js",
-		    "capture.js",
-		    "bg.js"]
+	"scripts": [
+	    "jquery.js", 
+	    "rsvp-latest.min.js", 
+	    "init.js",
+	    "cmn.js",
+	    "server.js", 
+	    "crawler.js",
+	    "capture.js",
+	    "bg.js"
+	]
     },
     
     "content_scripts": [
 	{
 	    "matches": ["http://www.avito.ru/*", "https://www.avito.ru/*"],
-	    "js": ["jquery.js", 
-		   "jsfeat-min.js", 
-		   "init.js",
-		   "cmn.js",
-		   "pimg.js",
-		   "boards.js", 
-		   "avito.js", 
-		   "capture.js", 
-		   "server.js", 
-		   "parser.js", 
-		   "crawler.js", 
-		   "marker.js", 
-		   "ui.js", 
-		   "tab.js"]
+	    "js": [
+		"jquery.js", 
+		"rsvp-latest.min.js", 
+		"jsfeat-min.js", 
+		"init.js",
+		"cmn.js",
+		"pimg.js",
+		"boards.js", 
+		"avito.js", 
+		"capture.js", 
+		"server.js", 
+		"parser.js", 
+		"crawler.js", 
+		"marker.js", 
+		"ui.js", 
+		"tab.js"
+	    ]
 	},
 	{
 	    "matches": ["http://www.cian.ru/*", "https://www.cian.ru/*"],
-	    "js": ["jquery.js", 
-		   "jsfeat-min.js", 
-		   "init.js",
-		   "cmn.js",
-		   "pimg.js",
-		   "boards.js", 
-		   "cian.js", 
-		   "capture.js", 
-		   "server.js", 
-		   "parser.js", 
-		   "crawler.js", 
-		   "marker.js", 
-		   "ui.js", 
-		   "tab.js"]
+	    "js": [
+		"jquery.js", 
+		"rsvp-latest.min.js", 
+		"jsfeat-min.js", 
+		"init.js",
+		"cmn.js",
+		"pimg.js",
+		"boards.js", 
+		"cian.js", 
+		"capture.js", 
+		"server.js", 
+		"parser.js", 
+		"crawler.js", 
+		"marker.js", 
+		"ui.js", 
+		"tab.js"
+	    ]
 	}
     ],
 
