@@ -391,7 +391,7 @@
 	    },
 
 	    lat: {
-		selector: "#i_contact div.b-catalog-map",
+		selector: "#i_contact div.j-item-map",
 		attr: "data-map-lat",
 		data: {
 		    lat: {}
@@ -399,7 +399,7 @@
 	    },
 
 	    lon: {
-		selector: "#i_contact div.b-catalog-map",
+		selector: "#i_contact div.j-item-map",
 		attr: "data-map-lon",
 		data: {
 		    lon: {}
@@ -429,7 +429,7 @@
 				    .replace (" авг.", ".08.2014")
 				    .replace (" сен.", ".09.2014")
 				    .replace (" окт.", ".10.2014")
-				    .replace (" ноя.", ".11.2014")
+				    .replace (" нояб.", ".11.2014")
 				    .replace (" дек.", ".12.2014")
 				    .replace (" в ", " ")
 			    );
