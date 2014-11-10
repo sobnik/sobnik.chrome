@@ -71,6 +71,7 @@
 	capture: {
 	    phoneImage: {
 		selector: "span.description__phone-insert.j-phone-show__insert img.description__phone-img",
+		dropSize: true,
 	    },
 
 	    photoImage: {
@@ -80,10 +81,6 @@
 		    var data = {
 			dropImage: true,
 			detectText: true,
-
-			sizeSmall: function (width, height) {
-			    return width < 650 && height < 490;
-			},
 
 			iterator: {},
 		    }

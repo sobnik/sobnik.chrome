@@ -142,19 +142,17 @@
 
 		    var image = pimg.dataToImage (captured);
 
-		    if (data.sizeSmall)
+		    if (!data.dropSize)
 		    {
-			var small = data.sizeSmall (image.width, image.height);
-			console.log ("Image size small", small);
-			setField (field+"SizeSmall", small);
+			setField (field+"SizeWidth", image.width);
+			setField (field+"SizeHeight", image.height);
 		    }
 
 		    if (data.detectText)
 		    {
 			var height = pimg.textHeight (
 			    board, image);
-			// FIXME make it TextHeight after server is upgraded
-			setField (field+"Height", height);
+			setField (field+"TextHeight", height);
 		    }
 
 		    fulfill ();
@@ -181,7 +179,10 @@
 	    {
 		return data.iterator.start ().then (function () {
 		    return cmn.AsyncIterate (data.iterator, function (image) {
-			return captureElement (field, data, image);
+			// release CPU here too
+			return cmn.wait (1000).then (function () {
+			    return captureElement (field, data, image);
+			})
 		    });
 		});
 	    }

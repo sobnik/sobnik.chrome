@@ -58,7 +58,7 @@
     {
 	var color = "#1e2"; // owner
 	var title = "Собственник";
-	if (a.Author == 3)
+	if (false && a.Author == 3) // FIXME show it later
 	{
 	    color = "yellow";
 	    title = "Проверьте фото";
