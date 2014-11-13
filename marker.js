@@ -214,6 +214,10 @@
 
     function startMarkPage () 
     {
+	// FIXME on load is not triggered on cian :(
+	// or... do we not receive it bcs it's already loaded?
+	cmn.later (3000, function () {
+//	$(window).on ('load', function () {
 	    if (cmn.matchRxs (location.href, board.urls))
 	    {
 		console.log ("Marking page");
@@ -221,6 +225,7 @@
 	    }
 	    else
 		console.log ("Not marking page");
+	})
     }
 
     // public
