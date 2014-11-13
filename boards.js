@@ -56,18 +56,26 @@
     // public
     function marker (a) 
     {
-	var color = "#1e2"; // owner
-	var title = "Собственник";
-	if (false && a.Author == 3) // FIXME show it later
-	{
-	    color = "yellow";
-	    title = "Проверьте фото";
-	}
-	else if (a.Author != 0)
-	{
-	    color = "red";
-	    title = "Посредник";
-	}
+      var color = "gray"; // in progress
+      var title = "В обработке";
+      if (typeof a.Url === 'undefined')
+      {
+        if (false && a.Author == 3) // FIXME show it later
+        {
+          color = "yellow";
+          title = "Проверьте фото";
+        }
+        else if (a.Author != 0)
+        {
+          color = "red";
+          title = "Посредник";
+        }
+        else
+        {
+          color = "#1e2"; // owner
+          title = "Собственник";  
+        }
+      }
 
 	return "<div title='"+title+"' style='display:block; "
 	    + "margin-right: 2px;"

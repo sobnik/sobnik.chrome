@@ -141,7 +141,7 @@
 	// min delay
 	var delay = cmn.rdelay (5, 10)
 
-	var tryMark = function () 
+	var tryMark = function (firstTry) 
 	{
 	    var map = gatherList ();
 	    var ads = [];
@@ -152,6 +152,11 @@
 
 	    if (ads.length == 0)
 		return;
+    
+      if (typeof firstTry !== 'undefined')
+      {
+        markListDraw (map, ads);      
+      }
 
 	    startSobnik (ads, delay, function (ads) {
 
@@ -161,19 +166,25 @@
 	    }, tryMark);
 	}
 
-	tryMark ();
+	tryMark (true);
     }
 
     function markPage ()
     {
 	var delay = cmn.rdelay (1, 2);
 
-	var tryMark = function () 
+	var tryMark = function (firstTry) 
 	{
 	    var id = board.url2id (location.href);
 	    console.assert (id, "Bad ad id "+location.href);
 
 	    var ads = [{AdId: id, Url: location.href}];
+
+      if (typeof firstTry !== 'undefined')
+      {
+        markPageDraw (ads);   
+      }
+      
 	    startSobnik (ads, delay, function (data) {
 
 		// draw
@@ -182,7 +193,7 @@
 	    }, tryMark);
 	}
 
-	tryMark ();
+	tryMark (true);
     }
 
     function startMarkList () 
@@ -203,10 +214,6 @@
 
     function startMarkPage () 
     {
-	// FIXME on load is not triggered on cian :(
-	// or... do we not receive it bcs it's already loaded?
-	cmn.later (3000, function () {
-//	$(window).on ('load', function () {
 	    if (cmn.matchRxs (location.href, board.urls))
 	    {
 		console.log ("Marking page");
@@ -214,7 +221,6 @@
 	    }
 	    else
 		console.log ("Not marking page");
-	})
     }
 
     // public
