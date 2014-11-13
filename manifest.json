@@ -54,7 +54,8 @@
 		"marker.js", 
 		"ui.js", 
 		"tab.js"
-	    ]
+	    ],
+	    "run_at": "document_end"      
 	},
 	{
 	    "matches": ["http://www.cian.ru/*", "https://www.cian.ru/*"],
@@ -74,7 +75,8 @@
 		"marker.js", 
 		"ui.js", 
 		"tab.js"
-	    ]
+	    ],
+	    "run_at": "document_end"            
 	}
     ],
 
