@@ -57,8 +57,10 @@
 		"marker.js", 
 		"ui.js", 
 		"tab.js"
-	    ]
+	    ],
+	    "run_at": "document_end"      
 	},
+
 	{
 	    "matches": ["http://www.cian.ru/*", "https://www.cian.ru/*"],
 	    "js": [
@@ -77,8 +79,10 @@
 		"marker.js", 
 		"ui.js", 
 		"tab.js"
-	    ]
+	    ],
+	    "run_at": "document_end"            
 	},
+
 	{
 	    "matches": ["http://*.mirkvartir.ru/*", "https://*.mirkvartir.ru/*"],
 	    "js": [
@@ -97,8 +101,10 @@
 		"marker.js", 
 		"ui.js", 
 		"tab.js"
-	    ]
+	    ],
+	    "run_at": "document_end"            
 	}
+
     ],
 
     "page_action": {
