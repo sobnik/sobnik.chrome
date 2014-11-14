@@ -154,10 +154,8 @@
 	    if (ads.length == 0)
 		return;
     
-      if (typeof firstTry !== 'undefined')
-      {
-        markListDraw (map, ads);      
-      }
+	    if (typeof firstTry !== 'undefined')
+		markListDraw (map, ads);      
 
 	    startSobnik (ads, delay, function (ads) {
 
@@ -181,10 +179,8 @@
 
 	    var ads = [{AdId: id, Url: location.href}];
 
-      if (typeof firstTry !== 'undefined')
-      {
-        markPageDraw (ads);   
-      }
+	    if (typeof firstTry !== 'undefined')
+		markPageDraw (ads);   
       
 	    startSobnik (ads, delay, function (data) {
 

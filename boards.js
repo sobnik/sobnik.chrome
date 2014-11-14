@@ -56,33 +56,33 @@
     // public
     function marker (a) 
     {
-      var color = "gray"; // in progress
-      var title = "В обработке";
-      if (typeof a.Url === 'undefined')
-      {
-        if (false && a.Author == 3) // FIXME show it later
-        {
-          color = "yellow";
-          title = "Проверьте фото";
-        }
-        else if (a.Author != 0)
-        {
-          color = "red";
-          title = "Посредник";
-        }
-        else
-        {
-          color = "#1e2"; // owner
-          title = "Собственник";  
-        }
-      }
+	var color = "gray"; // in progress
+	var title = "В обработке";
+	if (typeof a.Url === 'undefined')
+	{
+            if (false && a.Author == 3) // FIXME show it later
+            {
+		color = "yellow";
+		title = "Проверьте фото";
+            }
+            else if (a.Author != 0)
+            {
+		color = "red";
+		title = "Посредник";
+            }
+            else
+            {
+		color = "#1e2"; // owner
+		title = "Собственник";  
+            }
+	}
 
 	return "<div title='"+title+"' style='display:block; "
 	    + "margin-right: 2px;"
 	    + "height: 12px; width: 12px; line-height: 12px; "
 	    + "-moz-border-radius: 50%; border-radius: 50%;"
 	    + "background-color: "+color+";'/>";
-    }
+    };
 
     window.sobnik.boards = {
 	dts: dts,
