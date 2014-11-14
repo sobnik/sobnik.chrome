@@ -149,7 +149,7 @@
 		var html = "<span style='display:block;"
 		    +"float:left; margin:4px 0 0 0; padding: 0'>"
 		    +boards.marker (ad)+"</span>";
-		$(row).find ("div.cntr>p>span").prepend (html);
+		$(row).find ("div.cntr>p>span").first ().prepend (html);
 		return $(row).find("div.cntr>p>span>span")[0];
 	    },
 	},
