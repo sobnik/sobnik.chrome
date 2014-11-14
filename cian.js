@@ -37,6 +37,8 @@
     var cian = {
 	name: "cian.ru",
 
+	// FIXME add abuse reasons
+
 	urls: [
 	    "http[s]?://www.cian.ru/rent/("+types+")/\\d+/($|#.*|\\?.*)",
 	    "http[s]?://www.cian.ru/sale/("+types+")/\\d+/($|#.*|\\?.*)",
@@ -278,7 +280,17 @@
 		selector: "strong.object_descr_phone_orig a",
 		attr: "href",
 		data: {
+		    // FIXME check format of phone
 		    phone: {
+			rx: "tel:(.*)",
+			rxi: 1,
+			conv: function (s) { 
+			    return s
+				.replace (/-/g, "")
+				.replace (/\s/g, ""); 
+			}
+		    }
+		    phoneOff: {
 			rx: "tel:(.*)",
 			rxi: 1,
 			conv: function (s) { 

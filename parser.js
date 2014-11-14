@@ -162,15 +162,27 @@
 
 	function iterate (field, data)
 	{
+	    function cap (el)
+	    {
+		if (data.detectText)
+		{
+		    // release some CPU by waiting
+		    return cmn.wait (1000).then (function () {
+			return captureElement (field, data, el);
+		    });
+		}
+		else
+		{
+		    return captureElement (field, data, el);
+		}
+	    }
+
 	    if (data.selector)
 	    {
 		var loop = cmn.AsyncLoop ();
 		$(data.selector).each (function (i, e) {
 		    loop.next (function () {
-			// release some CPU by waiting
-			return cmn.wait (1000).then (function () {
-			    return captureElement (field, data, e);
-			});
+			return cap (e);
 		    });
 		});
 		return loop.promise ();
@@ -179,10 +191,7 @@
 	    {
 		return data.iterator.start ().then (function () {
 		    return cmn.AsyncIterate (data.iterator, function (image) {
-			// release CPU here too
-			return cmn.wait (1000).then (function () {
-			    return captureElement (field, data, image);
-			})
+			return cap (image);
 		    });
 		});
 	    }

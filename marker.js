@@ -47,6 +47,7 @@
 
 	    var row = map[a.AdId].row;
 	    var mark = board.list.mark (row, a);
+//	    console.log ("Mark", a, row, mark);
 	    lastMarkList[a.AdId] = mark;
 	    delete map[a.AdId];
 	}
