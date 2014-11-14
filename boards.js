@@ -84,10 +84,21 @@
 	    + "background-color: "+color+";'/>";
     };
 
+    // public
+    function allBoards ()
+    {
+	return {
+	    "avito": "",
+	    "cian": "",
+	    "mirkvartir": "",
+	}
+    };
+
     window.sobnik.boards = {
 	dts: dts,
 	dateFmt: dateFmt,
 	marker: marker,
+	allBoards: allBoards,
     };
     
 }) ();

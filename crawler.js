@@ -38,6 +38,7 @@
 	console.log ("Loading crawler.bg");
 
 	var server = sobnik.require ("server.bg");
+	var boards = sobnik.require ("boards");
 
 	var self = {
 	    ad: {},
@@ -363,7 +364,10 @@
 			else
 			{
 			    // get the job
-			    server.crawlerJob (function (data) {
+			    var request = {
+				"Boards": boards.allBoards (),
+			    };
+			    server.crawlerJob (request, function (data) {
 				speedup ();
 				open (data, getJob);
 			    }, retry);

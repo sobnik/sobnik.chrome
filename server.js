@@ -150,9 +150,9 @@
 	}
 
 	// public
-	function crawlerJob (callback, errback)
+	function crawlerJob (request, callback, errback)
 	{
-	    call ("crawler/job", /* data= */null, callback, errback);
+	    call ("crawler/job", request, callback, errback);
 	}
 
 	// public
@@ -187,7 +187,7 @@
 
 	function onCrawlerJob (message, sender, reply)
 	{
-	    crawlerJob (reply, errply (reply));
+	    crawlerJob (message.data, reply, errply (reply));
 	    // async reply
 	    return true;
 	}
@@ -274,9 +274,9 @@
 	}
 
 	// public
-	function crawlerJob (callback, errback)
+	function crawlerJob (request, callback, errback)
 	{
-	    bgCall ("crawlerJob", /* data= */null, callback, errback);
+	    bgCall ("crawlerJob", request, callback, errback);
 	}
 
 	// public

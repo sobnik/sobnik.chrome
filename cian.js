@@ -289,7 +289,7 @@
 				.replace (/-/g, "")
 				.replace (/\s/g, ""); 
 			}
-		    }
+		    },
 		    phoneOff: {
 			rx: "tel:(.*)",
 			rxi: 1,
