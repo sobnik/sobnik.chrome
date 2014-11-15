@@ -1,4 +1,4 @@
-/*  
+/*
     marker.js - sobnik.chrome module
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
@@ -52,19 +52,20 @@
 	    delete map[a.AdId];
 	}
     }
-    
+
     var lastMarkPage = [];
     function markPageDraw (ads)
     {
+        var ads = ads || [];
+        if (!ads.length)
+            return
+
 	console.log ("Removing...");
 	console.log (lastMarkPage);
 	for (var i = 0; i < lastMarkPage.length; i++)
 	    $(lastMarkPage[i]).remove ();
 	lastMarkPage = [];
-
-	if (ads == null)
-	    return
-
+    
 	var id = board.url2id (location.href);
 	console.assert (id, "Bad ad id "+location.href);
 	for (var i = 0; i < ads.length; i++)
@@ -77,7 +78,7 @@
 	    {
 		var parent = $(board.page.marks[i].selector);
 		var mark = board.page.marks[i].mark (parent, a);
-		lastMarkPage.push (mark);	    
+		lastMarkPage.push (mark);
 	    }
 	    break;
 	}
@@ -97,7 +98,7 @@
 		    return;
 		if (url.indexOf (location.hostname) < 0)
 		    url = location.origin + url;
-		
+
 		var id = board.url2id (url);
 		console.assert (id, "Bad ad id "+url);
 		map[id] = {row: row, url: url};
@@ -111,7 +112,7 @@
     function startSobnik (ads, delay, dataCallback, retryCallback)
     {
 	var request = {Ads: ads};
-	
+
 	function backoff (mult)
 	{
 	    sobnikDelayMult *= mult;
@@ -121,7 +122,7 @@
 		cmn.later (delay * sobnikDelayMult, retryCallback);
 	}
 
-	function errback () 
+	function errback ()
 	{
 	    // backoff faster on error
 	    backoff (2.0);
@@ -136,13 +137,13 @@
 
 	}, errback);
     }
-    
+
     function markList ()
     {
 	// min delay
 	var delay = cmn.rdelay (5, 10)
 
-	var tryMark = function (firstTry) 
+	var tryMark = function (firstTry)
 	{
 	    var map = gatherList ();
 	    var ads = [];
@@ -153,9 +154,9 @@
 
 	    if (ads.length == 0)
 		return;
-    
+
 	    if (typeof firstTry !== 'undefined')
-		markListDraw (map, ads);      
+		markListDraw (map, ads);
 
 	    startSobnik (ads, delay, function (ads) {
 
@@ -172,7 +173,7 @@
     {
 	var delay = cmn.rdelay (1, 2);
 
-	var tryMark = function (firstTry) 
+	var tryMark = function (firstTry)
 	{
 	    var id = board.url2id (location.href);
 	    console.assert (id, "Bad ad id "+location.href);
@@ -180,8 +181,8 @@
 	    var ads = [{AdId: id, Url: location.href}];
 
 	    if (typeof firstTry !== 'undefined')
-		markPageDraw (ads);   
-      
+		markPageDraw (ads);
+
 	    startSobnik (ads, delay, function (data) {
 
 		// draw
@@ -193,10 +194,10 @@
 	tryMark (true);
     }
 
-    function startMarkList () 
+    function startMarkList ()
     {
-	// we wait a while to let user navigate 
-	// somewhere else if this page was intermediate 	
+	// we wait a while to let user navigate
+	// somewhere else if this page was intermediate
 	var delay = 10000;
 	cmn.later (delay, function () {
 	    if (cmn.matchRxs (location.href, board.list.urls))
@@ -209,7 +210,7 @@
 	})
     }
 
-    function startMarkPage () 
+    function startMarkPage ()
     {
 	if (cmn.matchRxs (location.href, board.urls))
 	{
@@ -221,7 +222,7 @@
     }
 
     // public
-    function start () 
+    function start ()
     {
 	startMarkList ();
 	startMarkPage ();
