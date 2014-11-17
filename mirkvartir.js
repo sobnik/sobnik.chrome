@@ -417,7 +417,7 @@
         }
     };
 
-    window.sobnik.boards.avito = mirkvartir;
+    window.sobnik.boards.mirkvartir = mirkvartir;
     window.sobnik.boards.current = mirkvartir;
 
 })();
