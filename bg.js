@@ -1,4 +1,4 @@
-/*  
+/*
     bg.js - sobnik.chrome module
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
@@ -36,16 +36,16 @@
 
     function showSettings ()
     {
-	chrome.tabs.create ({
-	    url: "settings.html"
-	});	
+        chrome.tabs.create ({
+            url: "settings.html"
+        });
     }
 
     function showHowto ()
     {
-	chrome.tabs.create ({
-	    url: "http://sobnik.com/kak-rabotaet-sobnik.html"
-	});	
+        chrome.tabs.create ({
+            url: "http://sobnik.com/kak-rabotaet-sobnik.html"
+        });
     }
 
     function ready (message, sender, reply)
@@ -53,24 +53,24 @@
 //	if (sender.tab.incognito)
 //	    return;
 
-	chrome.pageAction.show (sender.tab.id);
+        chrome.pageAction.show (sender.tab.id);
     }
 
     function start ()
     {
-	cmn.setEventListeners ({
-	    "showSettings": showSettings,
-	    "ready": ready,
-	});
+        cmn.setEventListeners ({
+            "showSettings": showSettings,
+            "ready": ready,
+        });
 
-	chrome.runtime.onInstalled.addListener (function (details) {
-	    if (details.reason == "install")
-		showHowto ();	    
-	});
+        chrome.runtime.onInstalled.addListener (function (details) {
+            if (details.reason == "install")
+                showHowto ();
+        });
 
-	server.start ();
-	crawler.start ();
-	capture.start ();
+        server.start ();
+        crawler.start ();
+        capture.start ();
     }
 
     start ();
