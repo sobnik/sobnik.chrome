@@ -91,6 +91,7 @@
 	    "avito": "",
 	    "cian": "",
 	    "mirkvartir": "",
+	    "irr": "",
 	}
     };
 

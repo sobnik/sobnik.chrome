@@ -177,13 +177,13 @@
 
 	watermark: {
 	    top_left: {
-		right: 105,
-		bottom: 40
+		right: 115,
+		bottom: 50,
 	    },
 	    bottom_right: {
-		right: 10,
-		bottom: 15
-	    }
+		right: 20,
+		bottom: 22,
+	    },
 	},
 
 	list: {
