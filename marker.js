@@ -66,7 +66,11 @@
 	    return
 
 	var id = board.url2id (location.href);
-	console.assert (id, "Bad ad id "+location.href);
+	// some boards change the url while user
+	// browses photos etc (irr)
+	if (!id)
+	    return
+
 	for (var i = 0; i < ads.length; i++)
 	{
 	    var a = ads[i];
@@ -172,11 +176,21 @@
     {
 	var delay = cmn.rdelay (1, 2);
 
+	var first = true;
 	var tryMark = function (firstTry) 
 	{
 	    var id = board.url2id (location.href);
-	    console.assert (id, "Bad ad id "+location.href);
+	    if (!id)
+	    {
+		// some boards change url while user browses
+		// photos etc (irr)
+		cmn.later (delay, function () {
+		    tryMark (first);
+		});
+		return
+	    }
 
+	    first = false;
 	    var ads = [{AdId: id, Url: location.href}];
 
 	    if (typeof firstTry !== 'undefined')

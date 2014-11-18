@@ -139,6 +139,7 @@
 	    },
 	},
 
+	// FIXME it is flowing!
 	watermark: {
 	    top_left: {
 		right: 192,
@@ -152,7 +153,7 @@
 
 	list: {
 	    // the row in the list
-	    rowSelector: "div.catalog div.item", 
+	    rowSelector: "div.adds_cont div.add_list div.add_title_wrap", 
 
 	    // container for the link to an ad (relative to rowSelector)
 	    hrefSelector: "a", 
@@ -169,15 +170,15 @@
 		var html = "<span style='display:block;"
 		    +"float:left; margin:4px 0 0 0; padding: 0'>"
 		    +boards.marker (ad)+"</span>";
-		$(row).find ("h3").prepend (html);
-		return $(row).find("h3 span")[0];
+		$(row).prepend (html);
+		return $(row).find ("span")[0];
 	    },
 	},
 
 	page: {
 	    marks: [
 		{
-		    selector: "div.item-page-content h1.h1",
+		    selector: "h1.title3",
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
 			    +"float:left; margin:12px 0 0 0; padding: 0'>"
@@ -187,7 +188,7 @@
 		    },
 		},
 		{
-		    selector: "#seller",
+		    selector: "#contact_phones",
 		    mark: function (parent, ad) {
 			var html = "<span style='display:block;"
 			    +"float:left; margin:4px 0 0 0; padding: 0'>"

@@ -45,7 +45,8 @@
 	//    console.log(r);
 	if (r && r.length > index)
 	    return r[index].trim();
-	return null;
+
+	return "";
     }
 
     function all (elements, extractor)
@@ -67,8 +68,8 @@
 	{
 	    var field = fields[name];
 	    var element = $(field.selector);
-	    console.log(name);
-	    console.log(element.text());
+	    console.log (name);
+	    console.log (element.text ());
 	    if (field.attr)
 		values[name] = all (
 		    element, 
@@ -82,7 +83,10 @@
 		    }
 		);
 
-	    if (!field.data || !values[name])
+	    if (!values[name].length)
+		values[name] = [""];
+
+	    if (!field.data)
 		continue;
 
 	    for (var f in field.data)
@@ -91,8 +95,9 @@
 		for (var i = 0; i < values[name].length; i++)
 		{
 		    var v = rx (values[name][i], feature.rx, feature.rxi);
-		    if (v && feature.conv)
+		    if (feature.conv)
 			v = feature.conv (v);
+
 		    if (v)
 		    {
 			if (!features[f])

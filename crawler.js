@@ -487,7 +487,7 @@
 	// public
 	function start ()
 	{
-	    if (!sobnik.debugCrawler)
+	    if (!sobnik.debugStartCrawler)
 		insertBanner ();
 	    parser.start ();
 	}

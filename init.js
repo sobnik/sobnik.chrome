@@ -70,8 +70,8 @@
 	require: require,
 	isFunction: isFunction,
 //	debug: true, 
-	debugStartCrawler: true,
-	debugStopMarker: true, 
+//	debugStartCrawler: true,
+//	debugStopMarker: true, 
 //	debugPimg: true, 
     }
 
