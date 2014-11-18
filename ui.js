@@ -1,5 +1,5 @@
 /*  
-    marker.js - sobnik.chrome module
+    ui.js - sobnik.chrome module
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
     Copyright other contributors as noted in the AUTHORS file.
@@ -37,26 +37,26 @@
     // public 
     function start ()
     {
-	var reasons = board.abuseReasons;
+        var reasons = board.abuseReasons;
 
-	$("#abuses span.abuse-link").on ('click', function () {
-	    var reasonId = $(this).attr ('data-id');
-	    var reason = reasons ? reasons[reasonId] : "";
-	    if (!reason)
-		console.log ("Unknown reason", reasonId);
-	    else
-		console.log ("Abuse", reasonId, reason);
+        $("#abuses span.abuse-link").on ('click', function () {
+            var reasonId = $(this).attr ('data-id');
+            var reason = reasons ? reasons[reasonId] : "";
+            if (!reason)
+                console.log ("Unknown reason", reasonId);
+            else
+                console.log ("Abuse", reasonId, reason);
 
-	    var id = board.url2id (location.href);
-	    console.assert (id, "Bad ad id "+location.href);
+            var id = board.url2id (location.href);
+            console.assert (id, "Bad ad id "+location.href);
 
-	    // FIXME if reason agent ask why
-	    server.abuse (id, reason);
-	});
+            // FIXME if reason agent ask why
+            server.abuse (id, reason);
+        });
     }
 
     window.sobnik.ui = {
-	start: start,
+        start: start,
     }
 
 }) ();

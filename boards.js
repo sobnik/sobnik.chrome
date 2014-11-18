@@ -33,73 +33,73 @@
     // public
     function dts (date)
     {
-	return cmn.zpad (date.getDate ()) + "."
-	    + cmn.zpad (date.getMonth () + 1) + "."
-	    + cmn.zpad (date.getYear () + 1900);
+        return cmn.zpad (date.getDate ()) + "."
+            + cmn.zpad (date.getMonth () + 1) + "."
+            + cmn.zpad (date.getYear () + 1900);
     }
 
     // public
     function dateFmt (date)
     {
-	console.log ("Date '"+date+"'");
-	if (date.length == 15)
-	    date += "0";
-	var h = date.slice (11, 11+2);
-	var m = date.slice (14, 14+2);
-	return date.slice (6, 6+4) + "-" 
-	    + date.slice (3, 3+2) + "-"
-	    + date.slice (0, 2) + " "
-	    + (h ? h : "??") + ":"
-	    + (m ? m : "??");
+        console.log ("Date '"+date+"'");
+        if (date.length == 15)
+            date += "0";
+        var h = date.slice (11, 11+2);
+        var m = date.slice (14, 14+2);
+        return date.slice (6, 6+4) + "-" 
+            + date.slice (3, 3+2) + "-"
+            + date.slice (0, 2) + " "
+            + (h ? h : "??") + ":"
+            + (m ? m : "??");
     }
 
     // public
     function marker (a) 
     {
-	var color = "gray"; // in progress
-	var title = "В обработке";
-	if (typeof a.Url === 'undefined')
-	{
+        var color = "gray"; // in progress
+        var title = "В обработке";
+        if (typeof a.Url === 'undefined')
+        {
             if (false && a.Author == 3) // FIXME show it later
             {
-		color = "yellow";
-		title = "Проверьте фото";
+                color = "yellow";
+                title = "Проверьте фото";
             }
             else if (a.Author != 0)
             {
-		color = "red";
-		title = "Посредник";
+                color = "red";
+                title = "Посредник";
             }
             else
             {
-		color = "#1e2"; // owner
-		title = "Собственник";  
+                color = "#1e2"; // owner
+                title = "Собственник";  
             }
-	}
+        }
 
-	return "<div title='"+title+"' style='display:block; "
-	    + "margin-right: 2px;"
-	    + "height: 12px; width: 12px; line-height: 12px; "
-	    + "-moz-border-radius: 50%; border-radius: 50%;"
-	    + "background-color: "+color+";'/>";
+        return "<div title='"+title+"' style='display:block; "
+            + "margin-right: 2px;"
+            + "height: 12px; width: 12px; line-height: 12px; "
+            + "-moz-border-radius: 50%; border-radius: 50%;"
+            + "background-color: "+color+";'/>";
     };
 
     // public
     function allBoards ()
     {
-	return {
-	    "avito": "",
-	    "cian": "",
-	    "mirkvartir": "",
-	    "irr": "",
-	}
+        return {
+            "avito": "",
+            "cian": "",
+            "mirkvartir": "",
+            "irr": "",
+        }
     };
 
     window.sobnik.boards = {
-	dts: dts,
-	dateFmt: dateFmt,
-	marker: marker,
-	allBoards: allBoards,
+        dts: dts,
+        dateFmt: dateFmt,
+        marker: marker,
+        allBoards: allBoards,
     };
     
 }) ();

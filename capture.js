@@ -33,81 +33,81 @@
 
     function bgStart ()
     {
-	console.log ("Loading capture.bg");
+        console.log ("Loading capture.bg");
 
-	function capture (message, sender, reply) 
-	{
-	    function parse (data) 
-	    {
-		console.log ("Capture ", message.what);
-		var result = {};
-		for (var item in message.what) 
-		{
-		    var url = message.what[item]
-			.replace (/\//g, "\\/")
-			.replace ("?", "\\?")
-			.replace ("+", "\\+")
-			.replace ("=", "\\=")
-			.replace ("*", "\\*");
+        function capture (message, sender, reply) 
+        {
+            function parse (data) 
+            {
+                console.log ("Capture ", message.what);
+                var result = {};
+                for (var item in message.what) 
+                {
+                    var url = message.what[item]
+                        .replace (/\//g, "\\/")
+                        .replace ("?", "\\?")
+                        .replace ("+", "\\+")
+                        .replace ("=", "\\=")
+                        .replace ("*", "\\*");
 
-		    var pattern = "Content-Location[^\\n]*"+url
-			+"[^A-Za-z0-9\\+\\/]*([A-Za-z0-9=\\+\\/\\r\\n]+)";
+                    var pattern = "Content-Location[^\\n]*"+url
+                        +"[^A-Za-z0-9\\+\\/]*([A-Za-z0-9=\\+\\/\\r\\n]+)";
 
-		    //		console.log (pattern);
-		    var r = data.match (new RegExp (pattern));
-		    if (r && r.length > 1)
-			result[item] = r[1];
-		}
+                    //          console.log (pattern);
+                    var r = data.match (new RegExp (pattern));
+                    if (r && r.length > 1)
+                        result[item] = r[1];
+                }
 
-		reply (result);
-	    }
+                reply (result);
+            }
 
-	    chrome.pageCapture.saveAsMHTML ({tabId: sender.tab.id}, function (data) {
-		var reader = new FileReader ();
-		reader.addEventListener ("loadend", function () {
-		    parse (reader.result);
-		});
+            chrome.pageCapture.saveAsMHTML ({tabId: sender.tab.id}, function (data) {
+                var reader = new FileReader ();
+                reader.addEventListener ("loadend", function () {
+                    parse (reader.result);
+                });
 
-		reader.readAsBinaryString (data);		
-	    });
+                reader.readAsBinaryString (data);               
+            });
 
-	    // tell chrome that we'll reply asynchronously
-	    return true;
-	}
+            // tell chrome that we'll reply asynchronously
+            return true;
+        }
 
-	// public
-	function start ()
-	{
-	    cmn.setEventListeners ({capture: capture});
-	}
+        // public
+        function start ()
+        {
+            cmn.setEventListeners ({capture: capture});
+        }
 
-	window.sobnik.capture.bg = {
-	    start: start
-	}
+        window.sobnik.capture.bg = {
+            start: start
+        }
     }
 
     function tabStart ()
     {
-	console.log ("Loading capture.tab");
+        console.log ("Loading capture.tab");
 
-	// public
-	function start (what, callback)
-	{
-	    chrome.runtime.sendMessage (
-		/* ext_id= */"", 
-		{type: "capture", what: what}, 
-		/* options= */{}, 
-		callback);
-	}
+        // public
+        function start (what, callback)
+        {
+            chrome.runtime.sendMessage (
+                /* ext_id= */"", 
+                {type: "capture", what: what}, 
+                /* options= */{}, 
+                callback);
+        }
 
-	window.sobnik.capture.tab = {
-	    start: start,
-	}
+        window.sobnik.capture.tab = {
+            start: start,
+        }
     }
 
     window.sobnik.capture = {
-	tab: tabStart,
-	bg: bgStart,
+        tab: tabStart,
+        bg: bgStart,
     }
 
 }) ();

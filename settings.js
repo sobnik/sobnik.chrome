@@ -1,3 +1,27 @@
+/*  
+    settings.js - sobnik.chrome module
+
+    Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
+    Copyright other contributors as noted in the AUTHORS file.
+
+    This file is part of sobnik.chrome, Sobnik plugin for Chrome:
+    http://sobnik.com.
+
+    This is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This software is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this program. If not, see
+    <http://www.gnu.org/licenses/>.
+*/
+
 $(function () {
 
     var sobnik = window.sobnik;
@@ -7,211 +31,211 @@ $(function () {
 
     // updaters
     cmn.repeat (function () {
-	chrome.storage.local.get (["crawler", "crawlerOffUntil"], function (items) {
-	    if (!items.crawlerOffUntil || items.crawler == "off")
-	    {
-		$("#crawlerOffUntil").hide ();
-		return;
-	    }
+        chrome.storage.local.get (["crawler", "crawlerOffUntil"], function (items) {
+            if (!items.crawlerOffUntil || items.crawler == "off")
+            {
+                $("#crawlerOffUntil").hide ();
+                return;
+            }
 
-	    var now = new Date ();
-	    var till = new Date (items.crawlerOffUntil);
-	    if (now.getTime () < till.getTime ())
-	    {
-		var diff = (till.getTime () - now.getTime ()) / (60*1000);
-		$("#crawlerOffUntilTime").html (
-		    "на "+Number (diff).toFixed(0)+" минут, "
-			+"до "+till.toLocaleString ());
-		$("#crawlerOffUntil").show ();
-	    }
-	    else
-	    {
-		$("#crawlerOffUntil").hide ();
-	    }
-	});
+            var now = new Date ();
+            var till = new Date (items.crawlerOffUntil);
+            if (now.getTime () < till.getTime ())
+            {
+                var diff = (till.getTime () - now.getTime ()) / (60*1000);
+                $("#crawlerOffUntilTime").html (
+                    "на "+Number (diff).toFixed(0)+" минут, "
+                        +"до "+till.toLocaleString ());
+                $("#crawlerOffUntil").show ();
+            }
+            else
+            {
+                $("#crawlerOffUntil").hide ();
+            }
+        });
     });
 
     cmn.repeat (function () {
-	chrome.storage.local.get (["crawler", "crawlerOnUntil"], function (items) {
-	    if (!items.crawlerOnUntil)
-	    {
-		$("#crawlerOnUntil").hide ();
-		return;
-	    }
+        chrome.storage.local.get (["crawler", "crawlerOnUntil"], function (items) {
+            if (!items.crawlerOnUntil)
+            {
+                $("#crawlerOnUntil").hide ();
+                return;
+            }
 
-	    var now = new Date ();
-	    var till = new Date (items.crawlerOnUntil);
-	    if (now.getTime () < till.getTime ())
-	    {
-		var diff = (till.getTime () - now.getTime ()) / (60*1000);
-		$("#crawlerOnUntilTime").html (
-		    "на "+Number (diff).toFixed(0)+" минут, "
-			+"до "+till.toLocaleString ());
-		$("#crawlerOnUntil").show ();
-	    }
-	    else
-	    {
-		$("#crawlerOnUntil").hide ();
-	    }
-	});
+            var now = new Date ();
+            var till = new Date (items.crawlerOnUntil);
+            if (now.getTime () < till.getTime ())
+            {
+                var diff = (till.getTime () - now.getTime ()) / (60*1000);
+                $("#crawlerOnUntilTime").html (
+                    "на "+Number (diff).toFixed(0)+" минут, "
+                        +"до "+till.toLocaleString ());
+                $("#crawlerOnUntil").show ();
+            }
+            else
+            {
+                $("#crawlerOnUntil").hide ();
+            }
+        });
     });
 
     cmn.repeat (function () {
-	chrome.storage.local.get ("crawler", function (items) {
-	    var on = items.crawler;
-	    $("#crawlerOn").val ((on == "off") ? "off" : "on");
-	    if (on == "off")
-	    {
-		$("#crawlerOffTmp").hide ();
-		$("#crawlerOffUntil").hide ();
-		$("#crawlerOnTmp").show ();
-		$("#crawlerScheduleTable").hide ();
-	    }
-	    else
-	    {
-		$("#crawlerOffTmp").show ();
-		$("#crawlerOnTmp").hide ();
-//		$("#crawlerOnUntil").hide ();
-		$("#crawlerScheduleTable").show ();
-	    }
-	});
+        chrome.storage.local.get ("crawler", function (items) {
+            var on = items.crawler;
+            $("#crawlerOn").val ((on == "off") ? "off" : "on");
+            if (on == "off")
+            {
+                $("#crawlerOffTmp").hide ();
+                $("#crawlerOffUntil").hide ();
+                $("#crawlerOnTmp").show ();
+                $("#crawlerScheduleTable").hide ();
+            }
+            else
+            {
+                $("#crawlerOffTmp").show ();
+                $("#crawlerOnTmp").hide ();
+//              $("#crawlerOnUntil").hide ();
+                $("#crawlerScheduleTable").show ();
+            }
+        });
     });
 
     cmn.repeat (function () {
-	chrome.storage.local.get ("crawlerIncognito", function (items) {
-	    var on = items.crawlerIncognito;
-	    $("#crawlIncognito").prop ("checked", (on == "on") ? true : false);
-	    if (on == "on")
-		chrome.extension.isAllowedIncognitoAccess (function (allowed) {
-		    if (!allowed)
-			$("#crawlIncognitoWarning").show ();
-		    else
-			$("#crawlIncognitoWarning").hide ();
-		});
-	    else
-		$("#crawlIncognitoWarning").hide ();
-	});
+        chrome.storage.local.get ("crawlerIncognito", function (items) {
+            var on = items.crawlerIncognito;
+            $("#crawlIncognito").prop ("checked", (on == "on") ? true : false);
+            if (on == "on")
+                chrome.extension.isAllowedIncognitoAccess (function (allowed) {
+                    if (!allowed)
+                        $("#crawlIncognitoWarning").show ();
+                    else
+                        $("#crawlIncognitoWarning").hide ();
+                });
+            else
+                $("#crawlIncognitoWarning").hide ();
+        });
     });
 
     cmn.repeat (function () {
-	chrome.storage.local.get ("crawlerSchedule", function (items) {
-	    var on = items.crawlerSchedule;
-	    $("#crawlerSchedule").val ((on == "off") ? "off" : "on");
-	});
+        chrome.storage.local.get ("crawlerSchedule", function (items) {
+            var on = items.crawlerSchedule;
+            $("#crawlerSchedule").val ((on == "off") ? "off" : "on");
+        });
     });
 
     cmn.repeat (function () {
-	$("#crawlerHours input[type=checkbox]").each (function (i, e) {
-	    chrome.storage.local.get (e.id, function (items) {
-		var on = items[e.id];
-		$(e).prop ("checked", (on == "on") ? true : false);
-	    });
-	});
+        $("#crawlerHours input[type=checkbox]").each (function (i, e) {
+            chrome.storage.local.get (e.id, function (items) {
+                var on = items[e.id];
+                $(e).prop ("checked", (on == "on") ? true : false);
+            });
+        });
     });
 
     // helpers
     function crawlerTimed (off, minutes)
     {
-	var now = (new Date ()).getTime ();
-	var till = now + minutes * 60 * 1000; // ms
-	var tillDate = new Date ();
-	tillDate.setTime (till);
-	console.log (off, tillDate.toString ());
-	var data = {};
-	data["crawler"+(off ? "Off" : "On")+"Until"] = tillDate.toString ()
-	chrome.storage.local.set (data);
+        var now = (new Date ()).getTime ();
+        var till = now + minutes * 60 * 1000; // ms
+        var tillDate = new Date ();
+        tillDate.setTime (till);
+        console.log (off, tillDate.toString ());
+        var data = {};
+        data["crawler"+(off ? "Off" : "On")+"Until"] = tillDate.toString ()
+        chrome.storage.local.set (data);
     }
 
     function crawlerOffTimed (minutes)
     {
-	crawlerTimed (/* off= */true, minutes);
+        crawlerTimed (/* off= */true, minutes);
     }
 
     function crawlerOnTimed (minutes)
     {
-	crawlerTimed (/* off= */false, minutes);
+        crawlerTimed (/* off= */false, minutes);
     }
 
     function off ()
     {
-	chrome.runtime.sendMessage (
-	    /* ext_id= */"", 
-	    {type: "crawlerOff"}
-	);
+        chrome.runtime.sendMessage (
+            /* ext_id= */"", 
+            {type: "crawlerOff"}
+        );
     }
 
     // event-handlers
 
     $("#crawlerOffNow").on ('click', function () {
-	crawlerOnTimed (0);
-	off ();
+        crawlerOnTimed (0);
+        off ();
     });
 
     $("#crawlerOff30m").on ('click', function () {
-	crawlerOffTimed (30);
-	off ();
+        crawlerOffTimed (30);
+        off ();
     });
 
     $("#crawlerOff1h").on ('click', function () {
-	crawlerOffTimed (60);
-	off ();
+        crawlerOffTimed (60);
+        off ();
     });
 
     $("#crawlerOff3h").on ('click', function () {
-	crawlerOffTimed (180);
-	off ();
+        crawlerOffTimed (180);
+        off ();
     });
 
 
     $("#crawlerOnNow").on ('click', function () {
-	crawlerOffTimed (0);
+        crawlerOffTimed (0);
     });
 
     $("#crawlerOn30m").on ('click', function () {
-	crawlerOnTimed (30);
+        crawlerOnTimed (30);
     });
 
     $("#crawlerOn1h").on ('click', function () {
-	crawlerOnTimed (60);
+        crawlerOnTimed (60);
     });
 
     $("#crawlerOn3h").on ('click', function () {
-	crawlerOnTimed (180);
+        crawlerOnTimed (180);
     });
 
     $("#crawlerOn").on ("change", function () {
-	var value = $("#crawlerOn").val ();
-	console.log ("Crawler: "+value);
+        var value = $("#crawlerOn").val ();
+        console.log ("Crawler: "+value);
 
-	var data = {
-	    "crawler": value,
-	    "crawlerOffUntil": "",
-	    "crawlerOnUntil": "",
-	}
-	chrome.storage.local.set (data);
-	if (value == "off")
-	    off ();
+        var data = {
+            "crawler": value,
+            "crawlerOffUntil": "",
+            "crawlerOnUntil": "",
+        }
+        chrome.storage.local.set (data);
+        if (value == "off")
+            off ();
     });
 
     $("#crawlIncognito").on ("change", function () {
-	var value = $("#crawlIncognito").prop ('checked');
-	console.log ("Incognito: "+value);
-	chrome.storage.local.set ({"crawlerIncognito": value ? "on" : "off" });
+        var value = $("#crawlIncognito").prop ('checked');
+        console.log ("Incognito: "+value);
+        chrome.storage.local.set ({"crawlerIncognito": value ? "on" : "off" });
     });
 
     $("#crawlerSchedule").on ("change", function () {
-	var value = $("#crawlerSchedule").val ();
-	console.log ("crawlerSchedule: "+value);
-	chrome.storage.local.set ({"crawlerSchedule": value});
+        var value = $("#crawlerSchedule").val ();
+        console.log ("crawlerSchedule: "+value);
+        chrome.storage.local.set ({"crawlerSchedule": value});
     });
 
     $("#crawlerHours input[type=checkbox]").on ("change", function (e) {
-	var input = e.target;
-	var on = $(input).prop ("checked") ? "on" : "off";
-	var data = {};
-	data[input.id] = on;
-	console.log (data);
-	chrome.storage.local.set (data);
+        var input = e.target;
+        var on = $(input).prop ("checked") ? "on" : "off";
+        var data = {};
+        data[input.id] = on;
+        console.log (data);
+        chrome.storage.local.set (data);
     });
 
 })

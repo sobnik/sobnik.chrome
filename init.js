@@ -28,7 +28,7 @@
     console.assert (!("sobnik" in window), "Sobnik already initialized");
 
     RSVP.on ('error', function (reason) {
-	console.assert (false, reason);
+        console.assert (false, reason);
     })
 
     // http://stackoverflow.com/questions/5999998/how-can-i-check-if-a-javascript-variable-is-function-type
@@ -36,43 +36,43 @@
     // public
     function isFunction (f) 
     {
-	var getType = {};
-	return f && getType.toString.call(f) === '[object Function]';
+        var getType = {};
+        return f && getType.toString.call(f) === '[object Function]';
     }
 
     // public
     function require (module)
     {
-	var path = module.split ("/");
+        var path = module.split ("/");
 
-	var child = null;
-	var parent = window.sobnik;
-	path.forEach (function (name) {
-	    var parts = name.split (".");
-	    child = parent[parts[0]];
-	    console.assert (child, "Required", parts[0]);
-	    if (parts.length > 1)
-	    {
-		// init if not yet
-		if (isFunction (child[parts[1]]))
-		    child[parts[1]] ();
+        var child = null;
+        var parent = window.sobnik;
+        path.forEach (function (name) {
+            var parts = name.split (".");
+            child = parent[parts[0]];
+            console.assert (child, "Required", parts[0]);
+            if (parts.length > 1)
+            {
+                // init if not yet
+                if (isFunction (child[parts[1]]))
+                    child[parts[1]] ();
 
-		child = child[parts[1]];
-	    }
-	    parent = child;
-	});
+                child = child[parts[1]];
+            }
+            parent = child;
+        });
 
-//	console.log (window.sobnik);
-	return child;
+//      console.log (window.sobnik);
+        return child;
     }
 
     window.sobnik = {
-	require: require,
-	isFunction: isFunction,
-//	debug: true, 
-//	debugStartCrawler: true,
-//	debugStopMarker: true, 
-//	debugPimg: true, 
+        require: require,
+        isFunction: isFunction,
+//      debug: true, 
+//      debugStartCrawler: true,
+//      debugStopMarker: true, 
+//      debugPimg: true, 
     }
 
 }) ();

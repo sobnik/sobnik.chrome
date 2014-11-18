@@ -37,28 +37,28 @@
 
     function start () 
     {
-	var id = board.url2id (location.href);
+        var id = board.url2id (location.href);
 
-	chrome.runtime.sendMessage (
-	    /* ext_id= */"", 
-	    {type: "ready", AdId: id}, 
-	    /* options= */{}, 
-	    function (reply) {
-		console.log ("Bg confirms ready", reply);
-		if (reply && reply.type == "startCrawler")
-		{
-		    crawler.start ();
-		}
-		else
-		{
-		    if (sobnik.debugStartCrawler)
-			crawler.start ();
+        chrome.runtime.sendMessage (
+            /* ext_id= */"", 
+            {type: "ready", AdId: id}, 
+            /* options= */{}, 
+            function (reply) {
+                console.log ("Bg confirms ready", reply);
+                if (reply && reply.type == "startCrawler")
+                {
+                    crawler.start ();
+                }
+                else
+                {
+                    if (sobnik.debugStartCrawler)
+                        crawler.start ();
 
-		    if (!sobnik.debugStopMarker)
-			marker.start ();
-		    ui.start ();
-		}
-	    })
+                    if (!sobnik.debugStopMarker)
+                        marker.start ();
+                    ui.start ();
+                }
+            })
     }
 
     // start the tab

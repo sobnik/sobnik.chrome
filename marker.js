@@ -36,215 +36,215 @@
     var lastMarkList = {};
     function markListDraw (map, ads)
     {
-	for (var i = 0; i < ads.length; i++)
-	{
-	    var a = ads[i];
-	    if (!map[a.AdId])
-		continue;
+        for (var i = 0; i < ads.length; i++)
+        {
+            var a = ads[i];
+            if (!map[a.AdId])
+                continue;
 
-	    if (lastMarkList[a.AdId])
-		$(lastMarkList[a.AdId]).remove ();
+            if (lastMarkList[a.AdId])
+                $(lastMarkList[a.AdId]).remove ();
 
-	    var row = map[a.AdId].row;
-	    var mark = board.list.mark (row, a);
-//	    console.log ("Mark", a, row, mark);
-	    lastMarkList[a.AdId] = mark;
-	    delete map[a.AdId];
-	}
+            var row = map[a.AdId].row;
+            var mark = board.list.mark (row, a);
+//          console.log ("Mark", a, row, mark);
+            lastMarkList[a.AdId] = mark;
+            delete map[a.AdId];
+        }
     }
     
     var lastMarkPage = [];
     function markPageDraw (ads)
     {
-	console.log ("Removing...");
-	console.log (lastMarkPage);
-	for (var i = 0; i < lastMarkPage.length; i++)
-	    $(lastMarkPage[i]).remove ();
-	lastMarkPage = [];
+        console.log ("Removing...");
+        console.log (lastMarkPage);
+        for (var i = 0; i < lastMarkPage.length; i++)
+            $(lastMarkPage[i]).remove ();
+        lastMarkPage = [];
 
-	if (ads == null)
-	    return
+        if (ads == null)
+            return
 
-	var id = board.url2id (location.href);
-	// some boards change the url while user
-	// browses photos etc (irr)
-	if (!id)
-	    return
+        var id = board.url2id (location.href);
+        // some boards change the url while user
+        // browses photos etc (irr)
+        if (!id)
+            return
 
-	for (var i = 0; i < ads.length; i++)
-	{
-	    var a = ads[i];
-	    if (a.AdId != id)
-		continue;
+        for (var i = 0; i < ads.length; i++)
+        {
+            var a = ads[i];
+            if (a.AdId != id)
+                continue;
 
-	    for (var i = 0; i < board.page.marks.length; i++)
-	    {
-		var parent = $(board.page.marks[i].selector);
-		var mark = board.page.marks[i].mark (parent, a);
-		lastMarkPage.push (mark);	    
-	    }
-	    break;
-	}
+            for (var i = 0; i < board.page.marks.length; i++)
+            {
+                var parent = $(board.page.marks[i].selector);
+                var mark = board.page.marks[i].mark (parent, a);
+                lastMarkPage.push (mark);           
+            }
+            break;
+        }
     }
 
     function gatherList ()
     {
-	var rows = $(board.list.rowSelector);
-//	console.log (rows);
-	var map = {};
-	var regexp = board.list.pattern ? new RegExp(board.list.pattern) : null;
-	rows.each (function(i, row) {
-	    $(row).find (board.list.hrefSelector).each (function (i, a) {
-		var url = $(a).attr("href");
-//		console.log ("Url "+url+" rx "+regexp);
-		if (regexp && !regexp.test(url))
-		    return;
+        var rows = $(board.list.rowSelector);
+//      console.log (rows);
+        var map = {};
+        var regexp = board.list.pattern ? new RegExp(board.list.pattern) : null;
+        rows.each (function(i, row) {
+            $(row).find (board.list.hrefSelector).each (function (i, a) {
+                var url = $(a).attr("href");
+//              console.log ("Url "+url+" rx "+regexp);
+                if (regexp && !regexp.test(url))
+                    return;
 
-		if (!url.match ("^(http[s]?:)?//"))
-		    url = location.origin + url;
-//		console.log ("Url", url);
-		
-		var id = board.url2id (url);
-		console.assert (id, "Bad ad id "+url);
-		map[id] = {row: row, url: url};
-	    });
-	});
+                if (!url.match ("^(http[s]?:)?//"))
+                    url = location.origin + url;
+//              console.log ("Url", url);
+                
+                var id = board.url2id (url);
+                console.assert (id, "Bad ad id "+url);
+                map[id] = {row: row, url: url};
+            });
+        });
 
-	return map;
+        return map;
     }
 
     var sobnikDelayMult = 1.0;
     function startSobnik (ads, delay, dataCallback, retryCallback)
     {
-	var request = {Ads: ads};
-	
-	function backoff (mult)
-	{
-	    sobnikDelayMult *= mult;
-	    if (sobnikDelayMult > 10.0)
-		sobnikDelayMult = 10.0;
-	    if (retryCallback)
-		cmn.later (delay * sobnikDelayMult, retryCallback);
-	}
+        var request = {Ads: ads};
+        
+        function backoff (mult)
+        {
+            sobnikDelayMult *= mult;
+            if (sobnikDelayMult > 10.0)
+                sobnikDelayMult = 10.0;
+            if (retryCallback)
+                cmn.later (delay * sobnikDelayMult, retryCallback);
+        }
 
-	function errback () 
-	{
-	    // backoff faster on error
-	    backoff (2.0);
-	}
+        function errback () 
+        {
+            // backoff faster on error
+            backoff (2.0);
+        }
 
-	server.sobnik (request, function (data) {
-	    if (data && data.Ads)
-		dataCallback (data.Ads);
+        server.sobnik (request, function (data) {
+            if (data && data.Ads)
+                dataCallback (data.Ads);
 
-	    // backoff slowly
-	    backoff (1.1);
+            // backoff slowly
+            backoff (1.1);
 
-	}, errback);
+        }, errback);
     }
     
     function markList ()
     {
-	// min delay
-	var delay = cmn.rdelay (5, 10)
+        // min delay
+        var delay = cmn.rdelay (5, 10)
 
-	var tryMark = function (firstTry) 
-	{
-	    var map = gatherList ();
-	    var ads = [];
-	    for (var id in map)
-		ads.push ({AdId: id, Url: map[id].url});
+        var tryMark = function (firstTry) 
+        {
+            var map = gatherList ();
+            var ads = [];
+            for (var id in map)
+                ads.push ({AdId: id, Url: map[id].url});
 
-	    console.log ("Sobnik "+ads.length);
+            console.log ("Sobnik "+ads.length);
 
-	    if (ads.length == 0)
-		return;
+            if (ads.length == 0)
+                return;
     
-	    if (typeof firstTry !== 'undefined')
-		markListDraw (map, ads);      
+            if (typeof firstTry !== 'undefined')
+                markListDraw (map, ads);      
 
-	    startSobnik (ads, delay, function (ads) {
+            startSobnik (ads, delay, function (ads) {
 
-		// draw
-		markListDraw (map, ads);
+                // draw
+                markListDraw (map, ads);
 
-	    }, tryMark);
-	}
+            }, tryMark);
+        }
 
-	tryMark (true);
+        tryMark (true);
     }
 
     function markPage ()
     {
-	var delay = cmn.rdelay (1, 2);
+        var delay = cmn.rdelay (1, 2);
 
-	var first = true;
-	var tryMark = function (firstTry) 
-	{
-	    var id = board.url2id (location.href);
-	    if (!id)
-	    {
-		// some boards change url while user browses
-		// photos etc (irr)
-		cmn.later (delay, function () {
-		    tryMark (first);
-		});
-		return
-	    }
+        var first = true;
+        var tryMark = function (firstTry) 
+        {
+            var id = board.url2id (location.href);
+            if (!id)
+            {
+                // some boards change url while user browses
+                // photos etc (irr)
+                cmn.later (delay, function () {
+                    tryMark (first);
+                });
+                return
+            }
 
-	    first = false;
-	    var ads = [{AdId: id, Url: location.href}];
+            first = false;
+            var ads = [{AdId: id, Url: location.href}];
 
-	    if (typeof firstTry !== 'undefined')
-		markPageDraw (ads);   
+            if (typeof firstTry !== 'undefined')
+                markPageDraw (ads);   
       
-	    startSobnik (ads, delay, function (data) {
+            startSobnik (ads, delay, function (data) {
 
-		// draw
-		markPageDraw (data);
+                // draw
+                markPageDraw (data);
 
-	    }, tryMark);
-	}
+            }, tryMark);
+        }
 
-	tryMark (true);
+        tryMark (true);
     }
 
     function startMarkList () 
     {
-	// we wait a while to let user navigate 
-	// somewhere else if this page was intermediate 	
-	var delay = 10000;
-	cmn.later (delay, function () {
-	    if (cmn.matchRxs (location.href, board.list.urls))
-	    {
-		console.log ("Marking list");
-		markList ();
-	    }
-	    else
-		console.log ("Not marking list");
-	})
+        // we wait a while to let user navigate 
+        // somewhere else if this page was intermediate         
+        var delay = 10000;
+        cmn.later (delay, function () {
+            if (cmn.matchRxs (location.href, board.list.urls))
+            {
+                console.log ("Marking list");
+                markList ();
+            }
+            else
+                console.log ("Not marking list");
+        })
     }
 
     function startMarkPage () 
     {
-	if (cmn.matchRxs (location.href, board.urls))
-	{
-	    console.log ("Marking page");
-	    markPage ();
-	}
-	else
-	    console.log ("Not marking page");
+        if (cmn.matchRxs (location.href, board.urls))
+        {
+            console.log ("Marking page");
+            markPage ();
+        }
+        else
+            console.log ("Not marking page");
     }
 
     // public
     function start () 
     {
-	startMarkList ();
-	startMarkPage ();
+        startMarkList ();
+        startMarkPage ();
     }
 
     sobnik.marker = {
-	start: start,
+        start: start,
     }
 
 }) ();

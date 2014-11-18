@@ -33,281 +33,281 @@
     
     function bgPart () 
     {
-	console.log ("Loading server.bg");
+        console.log ("Loading server.bg");
 
-//	var apiUrl = "http://localhost:8081/api/";
-//	var crossDomain = true;
-	var apiUrl = "http://sobnik.com/api/";
-	var crossDomain = false;
+//      var apiUrl = "http://localhost:8081/api/";
+//      var crossDomain = true;
+        var apiUrl = "http://sobnik.com/api/";
+        var crossDomain = false;
 
-	var token = "";
-	var requesting = false;
+        var token = "";
+        var requesting = false;
 
-	var abused = {};
+        var abused = {};
 
-	function authHeaders ()
-	{
-	    var headers = {};
-	    if (token)
-		headers["Authorization"] = token;
-	    return headers;
-	}
+        function authHeaders ()
+        {
+            var headers = {};
+            if (token)
+                headers["Authorization"] = token;
+            return headers;
+        }
 
-	function setToken (t)
-	{
-	    token = t;
-	    chrome.storage.local.set ({token: t});
-	}
+        function setToken (t)
+        {
+            token = t;
+            chrome.storage.local.set ({token: t});
+        }
 
-	function requestToken ()
-	{
-	    if (requesting)
-		return;
+        function requestToken ()
+        {
+            if (requesting)
+                return;
 
-	    requesting = true;
+            requesting = true;
 
-	    function errback () {
-		console.log ("Refused token");
-		requesting = false;
-		setToken ("");
-	    }
+            function errback () {
+                console.log ("Refused token");
+                requesting = false;
+                setToken ("");
+            }
 
-	    function callback (data) 
-	    {
-		console.log ("Token", data);
-		requesting = false;
-		setToken (data.Token);
-	    }
+            function callback (data) 
+            {
+                console.log ("Token", data);
+                requesting = false;
+                setToken (data.Token);
+            }
 
-	    $.ajax ({
-		url: apiUrl + "token",
-		type: "POST",
-		data: null,
-		headers: authHeaders (),
-		crossDomain: crossDomain,
-		statusCode: {
-		    200: callback,
-		    204: errback
-		},
-		error: errback
-	    });
-	}
+            $.ajax ({
+                url: apiUrl + "token",
+                type: "POST",
+                data: null,
+                headers: authHeaders (),
+                crossDomain: crossDomain,
+                statusCode: {
+                    200: callback,
+                    204: errback
+                },
+                error: errback
+            });
+        }
 
-	function getToken () 
-	{
-	    if (token)
-		return;
+        function getToken () 
+        {
+            if (token)
+                return;
 
-	    chrome.storage.local.get ("token", function (items) {
-		token = items.token;
-		if (token)
-		    return;
+            chrome.storage.local.get ("token", function (items) {
+                token = items.token;
+                if (token)
+                    return;
 
-		requestToken ();
-	    });
-	}
+                requestToken ();
+            });
+        }
 
-	function ajax (method, type, data, callback, statbacks, errback)
-	{
-	    
-	    if (!statbacks)
-		statbacks = {};
+        function ajax (method, type, data, callback, statbacks, errback)
+        {
+            
+            if (!statbacks)
+                statbacks = {};
 
-	    statbacks[403] = function () {
-		console.log ("Token expired");
-		setToken ("");
-		requestToken ();
-	    }
+            statbacks[403] = function () {
+                console.log ("Token expired");
+                setToken ("");
+                requestToken ();
+            }
 
-	    $.ajax ({
-		url: apiUrl + method,
-		type: type,
-		data: JSON.stringify (data),
-		headers: authHeaders (),
-		success: callback,
-		crossDomain: crossDomain,
-		statusCode: statbacks,
-		error: function (xhr, status, error) {
-		    console.log ("API Error, method: "+method+", status: "+status);
-		    if (errback)
-			errback ();
-		}
-	    });
-	}
+            $.ajax ({
+                url: apiUrl + method,
+                type: type,
+                data: JSON.stringify (data),
+                headers: authHeaders (),
+                success: callback,
+                crossDomain: crossDomain,
+                statusCode: statbacks,
+                error: function (xhr, status, error) {
+                    console.log ("API Error, method: "+method+", status: "+status);
+                    if (errback)
+                        errback ();
+                }
+            });
+        }
 
-	function call (method, data, callback, errback)
-	{
-	    if (sobnik.debug)
-		return;
+        function call (method, data, callback, errback)
+        {
+            if (sobnik.debug)
+                return;
 
-	    ajax (method, "POST", data, /* callback= */null, {
-		200: callback,
-		201: callback,
-		204: errback,
-	    }, errback);
+            ajax (method, "POST", data, /* callback= */null, {
+                200: callback,
+                201: callback,
+                204: errback,
+            }, errback);
 
-	    return;
-	}
+            return;
+        }
 
-	// public
-	function crawlerJob (request, callback, errback)
-	{
-	    call ("crawler/job", request, callback, errback);
-	}
+        // public
+        function crawlerJob (request, callback, errback)
+        {
+            call ("crawler/job", request, callback, errback);
+        }
 
-	// public
-	function sobnik (request, callback, errback)
-	{
-	    call ("sobnik", request, function (data) {
-		if (data && data.Ads)
-		{
-		    // over-mark abused ads
-		    for (var i = 0; i < data.Ads.length; i++)
-		    {
-			var id = data.Ads[i].AdId;
-			if (abused[id])
-			    data.Ads[i].Author = 2;
-		    }
-		}
+        // public
+        function sobnik (request, callback, errback)
+        {
+            call ("sobnik", request, function (data) {
+                if (data && data.Ads)
+                {
+                    // over-mark abused ads
+                    for (var i = 0; i < data.Ads.length; i++)
+                    {
+                        var id = data.Ads[i].AdId;
+                        if (abused[id])
+                            data.Ads[i].Author = 2;
+                    }
+                }
 
-		callback (data);
-	    }, errback);
-	}
+                callback (data);
+            }, errback);
+        }
 
-	// public
-	function ads (data, callback, errback)
-	{
-	    call ("ads", data, callback, errback);
-	}
+        // public
+        function ads (data, callback, errback)
+        {
+            call ("ads", data, callback, errback);
+        }
 
-	function errply (reply)
-	{
-	    return function () { reply ({error: true}); }
-	}
+        function errply (reply)
+        {
+            return function () { reply ({error: true}); }
+        }
 
-	function onCrawlerJob (message, sender, reply)
-	{
-	    crawlerJob (message.data, reply, errply (reply));
-	    // async reply
-	    return true;
-	}
+        function onCrawlerJob (message, sender, reply)
+        {
+            crawlerJob (message.data, reply, errply (reply));
+            // async reply
+            return true;
+        }
 
-	function onSobnik (message, sender, reply)
-	{
-	    sobnik (message.data, reply, errply (reply));
-	    // async reply
-	    return true;
-	}
+        function onSobnik (message, sender, reply)
+        {
+            sobnik (message.data, reply, errply (reply));
+            // async reply
+            return true;
+        }
 
-	function onAds (message, sender, reply)
-	{
-	    ads (message.data, reply, errply (reply));
-	    // async reply
-	    return true;
-	}
+        function onAds (message, sender, reply)
+        {
+            ads (message.data, reply, errply (reply));
+            // async reply
+            return true;
+        }
 
-	function onAbuse (message, sender, reply)
-	{
-	    var id = message.data.id;
-	    abused[id] = {
-		id: id,
-		reason: message.data.reason,
-		time: (new Date ()).getTime (),
-	    }
+        function onAbuse (message, sender, reply)
+        {
+            var id = message.data.id;
+            abused[id] = {
+                id: id,
+                reason: message.data.reason,
+                time: (new Date ()).getTime (),
+            }
 
-	    chrome.storage.local.set ({abuse: abused});
+            chrome.storage.local.set ({abuse: abused});
 
-	    // FIXME remove when we start sending to server
-	    reply ({});
-	    return false;
-	    //return tabCall ("ads", message.data, reply);
-	}
+            // FIXME remove when we start sending to server
+            reply ({});
+            return false;
+            //return tabCall ("ads", message.data, reply);
+        }
 
-	// public
-	function start ()
-	{
-	    cmn.setEventListeners ({
-		"server.crawlerJob": onCrawlerJob,
-		"server.sobnik": onSobnik,
-		"server.ads": onAds,
-		"server.abuse": onAbuse,
-	    });
+        // public
+        function start ()
+        {
+            cmn.setEventListeners ({
+                "server.crawlerJob": onCrawlerJob,
+                "server.sobnik": onSobnik,
+                "server.ads": onAds,
+                "server.abuse": onAbuse,
+            });
 
-	    getToken ();
+            getToken ();
 
-	    chrome.storage.local.get ("abuse", function (items) {
-		abused = items.abuse || {};
-		console.log ("Abused init", abused);
-	    });
-	}
+            chrome.storage.local.get ("abuse", function (items) {
+                abused = items.abuse || {};
+                console.log ("Abused init", abused);
+            });
+        }
 
-	window.sobnik.server.bg = {
-	    start: start,
-	    crawlerJob: crawlerJob,
-	    sobnik: sobnik,
-	    ads: ads,
-	}
+        window.sobnik.server.bg = {
+            start: start,
+            crawlerJob: crawlerJob,
+            sobnik: sobnik,
+            ads: ads,
+        }
     }
 
     function tabPart () 
     {
-	console.log ("Loading server.tab");
+        console.log ("Loading server.tab");
 
-	function bgCall (method, data, callback, errback)
-	{
-	    chrome.runtime.sendMessage (
-		/* ext_id= */"", 
-		{type: "server."+method, data: data},
-		/* options= */{}, 
-		function (response) {
-		    if (!response || response.error)
-		    {
-			if (errback)
-			    errback (response);
-		    }
-		    else
-		    {
-			if (callback)
-			    callback (response);
-		    }
-		});
-	}
+        function bgCall (method, data, callback, errback)
+        {
+            chrome.runtime.sendMessage (
+                /* ext_id= */"", 
+                {type: "server."+method, data: data},
+                /* options= */{}, 
+                function (response) {
+                    if (!response || response.error)
+                    {
+                        if (errback)
+                            errback (response);
+                    }
+                    else
+                    {
+                        if (callback)
+                            callback (response);
+                    }
+                });
+        }
 
-	// public
-	function crawlerJob (request, callback, errback)
-	{
-	    bgCall ("crawlerJob", request, callback, errback);
-	}
+        // public
+        function crawlerJob (request, callback, errback)
+        {
+            bgCall ("crawlerJob", request, callback, errback);
+        }
 
-	// public
-	function sobnik (request, callback, errback)
-	{
-	    bgCall ("sobnik", request, callback, errback);
-	}
+        // public
+        function sobnik (request, callback, errback)
+        {
+            bgCall ("sobnik", request, callback, errback);
+        }
 
-	// public
-	function ads (request, callback, errback)
-	{
-	    bgCall ("ads", request, callback, errback);
-	}
+        // public
+        function ads (request, callback, errback)
+        {
+            bgCall ("ads", request, callback, errback);
+        }
 
-	// public 
-	function abuse (id, reason)
-	{
-	    bgCall ("abuse", {id: id, reason: reason});
-	}
+        // public 
+        function abuse (id, reason)
+        {
+            bgCall ("abuse", {id: id, reason: reason});
+        }
 
-	window.sobnik.server.tab = {
-	    crawlerJob: crawlerJob,
-	    sobnik: sobnik,
-	    ads: ads,
-	    abuse: abuse,
-	}
+        window.sobnik.server.tab = {
+            crawlerJob: crawlerJob,
+            sobnik: sobnik,
+            ads: ads,
+            abuse: abuse,
+        }
     }
 
     window.sobnik.server = {
-	bg: bgPart,
-	tab: tabPart,
+        bg: bgPart,
+        tab: tabPart,
     }
 
 }) ();
