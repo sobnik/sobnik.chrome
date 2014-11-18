@@ -41,7 +41,7 @@
         },
 
         urls: [
-            "http[s]?://.*\\.?irr.ru/real-estate/(rent|sale)/[^/]+advert[\\d]+",
+            "http[s]?://.*\\.?irr.ru/real-estate/.+advert[\\d]+",
         ],
 
         trigger: "#contact_phones img",
@@ -163,7 +163,7 @@
 
             // matching urls will be treated as a list of ads 
             urls: [
-                "http[s]?://.*\\.?irr.ru/real-estate/(sale|rent)/($|#|\\?|search)"
+                "http[s]?://.*\\.?irr.ru/real-estate/.*(?!advert\\d+\\.html)" // (?! negated lookahead)
             ],
 
             mark: function (row, ad) {
