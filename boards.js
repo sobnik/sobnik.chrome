@@ -60,7 +60,7 @@
         var title = "В обработке";
         if (typeof a.Url === 'undefined')
         {
-            if (a.Author == 3) // FIXME show it later
+            if (false && a.Author == 3) // FIXME show it later
             {
                 color = "yellow";
                 title = "Проверьте фото";
