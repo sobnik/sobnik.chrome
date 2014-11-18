@@ -1,4 +1,4 @@
-/*  
+/*
     parser.js - sobnik.chrome module
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
@@ -60,8 +60,9 @@
         return values;
     }
 
-    function gatherFields (fields) 
+    function gatherFields (fields)
     {
+        var tmpscope = {};
         var values = {};
         var features = {};
         for (var name in fields)
@@ -72,14 +73,14 @@
             console.log (element.text ());
             if (field.attr)
                 values[name] = all (
-                    element, 
+                    element,
                     function (e) { return $(e).attr(field.attr); }
                 );
             else
                 values[name] = all (
-                    element, 
-                    function (e) { 
-                        return rx ($(e).text (), field.rx, field.rxi); 
+                    element,
+                    function (e) {
+                        return rx ($(e).text (), field.rx, field.rxi);
                     }
                 );
 
@@ -96,7 +97,7 @@
                 {
                     var v = rx (values[name][i], feature.rx, feature.rxi);
                     if (feature.conv)
-                        v = feature.conv (v);
+                        v = feature.conv.call (tmpscope, v);
 
                     if (v)
                     {
@@ -116,7 +117,7 @@
     function done ()
     {
         chrome.runtime.sendMessage (
-            /* ext_id= */"", 
+            /* ext_id= */"",
             {type: "parserDone"}
         );
     }
@@ -140,7 +141,7 @@
                 what[field] = $(e).attr (data.attr || "src");
 
                 capture.start (what, function (captured) {
-    
+
                     captured = captured[field];
                     if (!data.dropImage)
                         setField (field, captured);
@@ -220,7 +221,7 @@
         return loop.promise ();
     }
 
-    function gather () 
+    function gather ()
     {
         console.log ("gathering");
 
@@ -233,7 +234,7 @@
 
         ad.Fields = gatherFields (board.fields);
 
-        function post () 
+        function post ()
         {
             console.log (ad);
             server.ads (ad, done);
@@ -251,11 +252,11 @@
 
     }
 
-    function parse () 
+    function parse ()
     {
         if (board.clicks)
             cmn.click (board.clicks);
-        
+
         console.log ("trigger "+board.trigger);
         cmn.waitDomLoaded (board.trigger)
             .then (cmn.wait (3000)) // FIXME why?
@@ -272,7 +273,7 @@
     // public
     function startParse ()
     {
-        function start () 
+        function start ()
         {
             var loc = location.href;
             // if current page matches pattern - start parser
