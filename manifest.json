@@ -3,7 +3,7 @@
 
     "name": "Sobnik: фильтрует риелторов",
     "description": "Выявляет посредников в объявлениях по недвижимости",
-    "version": "1.30",
+    "version": "1.31",
 
     "icons": { 
 	"128": "images/icon_128.png" 
@@ -19,6 +19,8 @@
 	"https://*.mirkvartir.ru/*",
 	"http://irr.ru/*",
 	"https://irr.ru/*",
+	"http://*.irr.ru/*",
+	"https://*.irr.ru/*",
 	"tabs",
         "pageCapture",
 	"storage"
@@ -108,7 +110,7 @@
 	},
 
 	{
-	    "matches": ["http://irr.ru/*", "https://irr.ru/*"],
+	    "matches": ["http://irr.ru/*", "https://irr.ru/*", "http://*.irr.ru/*", "https://*.irr.ru/*"],
 	    "js": [
 		"jquery.js", 
 		"rsvp-latest.min.js", 
