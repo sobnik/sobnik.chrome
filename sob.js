@@ -75,7 +75,7 @@
 
             mark: function (row, ad) {
                 var el = $("<span style='display:block;"
-                    +"float:left; margin:4px 0 0 0; padding: 0'>"
+                    +"float:left; margin: 1em 0; padding: 0'>"
                     +boards.marker (ad)+"</span>");
                     $(row).find("td.address").prepend(el);
                     return el;
@@ -133,7 +133,7 @@
                     script: {
                         rx: "var current_object = eval\\((.*?)\\);",
                         rxi: 1,
-                        conv: function (s){
+                        conv: function (s) {
                             if (s.length)
                             {
                                 this.current_object = JSON.parse(s);
@@ -149,12 +149,12 @@
                 selector: "div.wrapper h1",
                 data: {
                     name: {
-                        conv: function (){
+                        conv: function () {
                             return unescape(this.current_object.owner_name);
                         }
                     },
                     street: {
-                        conv: function (){
+                        conv: function () {
                             return unescape(this.current_object.info.address);
                         }
                     },
@@ -175,17 +175,17 @@
                         },
                     },
                     area: {
-                        conv: function (){
+                        conv: function () {
                             return (parseInt(this.current_object.info.sqtl) / 10).toString();
                         }
                     },
                     floor: {
-                        conv: function (){
+                        conv: function () {
                             return this.current_object.info.bldflr;
                         }
                     },
                     floors: {
-                        conv: function (){
+                        conv: function () {
                             return this.current_object.info.bldht;
                         }
                     },

@@ -1,4 +1,4 @@
-/*  
+/*
     boards.js - sobnik.chrome module
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
@@ -46,7 +46,7 @@
             date += "0";
         var h = date.slice (11, 11+2);
         var m = date.slice (14, 14+2);
-        return date.slice (6, 6+4) + "-" 
+        return date.slice (6, 6+4) + "-"
             + date.slice (3, 3+2) + "-"
             + date.slice (0, 2) + " "
             + (h ? h : "??") + ":"
@@ -54,7 +54,7 @@
     }
 
     // public
-    function marker (a) 
+    function marker (a)
     {
         var color = "gray"; // in progress
         var title = "В обработке";
@@ -73,7 +73,7 @@
             else
             {
                 color = "#1e2"; // owner
-                title = "Собственник";  
+                title = "Собственник";
             }
         }
 
@@ -92,6 +92,7 @@
             "cian": "",
             "mirkvartir": "",
             "irr": "",
+            "sob": "",
         }
     };
 
@@ -101,5 +102,5 @@
         marker: marker,
         allBoards: allBoards,
     };
-    
+
 }) ();
