@@ -99,8 +99,10 @@
 //		console.log ("Url "+url+" rx "+regexp);
 		if (regexp && !regexp.test(url))
 		    return;
-		if (url.indexOf (location.hostname) < 0)
+
+		if (!url.match ("^(http[s]?:)?//"))
 		    url = location.origin + url;
+//		console.log ("Url", url);
 		
 		var id = board.url2id (url);
 		console.assert (id, "Bad ad id "+url);
