@@ -302,15 +302,6 @@
                 }
             },
 
-            /*author_owner: {
-                selector: "div.description_term span.t-seller-title:contains('Арендодатель')",
-                data: {
-                    author: {
-                        conv: function () { return "owner"; }
-                    }
-                }
-            },*/
-
             lat: {
                 selector: "div.object_descr_map_static input",
                 attr: "value",

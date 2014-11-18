@@ -69,9 +69,9 @@
     window.sobnik = {
         require: require,
         isFunction: isFunction,
-//      debug: true, 
-//      debugStartCrawler: true,
-//      debugStopMarker: true, 
+//        debug: true, 
+//        debugStartCrawler: true,
+//        debugStopMarker: true, 
 //      debugPimg: true, 
     }
 

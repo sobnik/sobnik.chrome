@@ -376,7 +376,7 @@
                 selector: "div.description_term span.t-seller-title:contains('Агентство')",
                 data: {
                     author: {
-                        conv: function () { return "agent"; }
+                        conv: function (s) { if (s) return "agent"; }
                     }
                 }
             },
@@ -385,7 +385,7 @@
                 selector: "div.description_term span.t-seller-title:contains('Арендодатель')",
                 data: {
                     author: {
-                        conv: function () { return "owner"; }
+                        conv: function (s) { if (s) return "owner"; }
                     }
                 }
             },
