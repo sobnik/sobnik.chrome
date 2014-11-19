@@ -1,4 +1,4 @@
-/*  
+/*
     mirkvartir.js - sobnik.chrome module to work with mirkvartir.ru
 
     Copyright (c) 2014 Artur Brugeman <brugeman.artur@gmail.com>
@@ -46,7 +46,7 @@
         untrigger: [
             // FIXME fill
         ],
-        
+
         capture: {
 
             photoImage: {
@@ -59,7 +59,7 @@
 
                         iterator: {},
                     }
-            
+
                     var images = "#photos a.photo-item-link img";
 
                     var cursor = -1;
@@ -89,7 +89,7 @@
                                     return cmn.waitCond (function () {
 
                                         // make artificial scroll event
-                                        // as browser does not fire it if 
+                                        // as browser does not fire it if
                                         // tab is not active
                                         // and make it constantly,
                                         // as some might get lost
@@ -132,25 +132,25 @@
 
         list: {
             // the row in the list
-            rowSelector: "#flats div.list_item", 
+            rowSelector: "#flats div.list_item",
 
             // container for the link to an ad (relative to rowSelector)
-            hrefSelector: "a.cmpz-list-item", 
+            hrefSelector: "a.cmpz-list-item",
 
             // links matching this pattern will be marked in the list
             pattern: "^/\\d+/",
 
-            // matching urls will be treated as a list of ads 
+            // matching urls will be treated as a list of ads
             urls: [
                 "http[s]?://.*.mirkvartir.ru/%"
             ],
 
             mark: function (row, ad) {
-                var html = "<span style='display:block;"
-                    +"float:left; margin:4px 0 0 0; padding: 0'>"
-                    +boards.marker (ad)+"</span>";
-                $(row).find ("div.cntr>p>span").first ().prepend (html);
-                return $(row).find("div.cntr>p>span>span")[0];
+                var el = $("<span style='display:block;"
+                    + "float:left; margin:4px 0 0 0; padding: 0'>"
+                    + boards.marker(ad) + "</span>");
+                $(row).find("div.cntr>p>span:first-child").prepend(el);
+                return el;
             },
         },
 
@@ -354,7 +354,7 @@
         }
     };
 
-    window.sobnik.boards.avito = mirkvartir;
+    window.sobnik.boards.mirkvartir = mirkvartir;
     window.sobnik.boards.current = mirkvartir;
 
 }) ();
