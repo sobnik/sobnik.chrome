@@ -35,10 +35,13 @@
     {
         console.log ("Loading server.bg");
 
-//        var apiUrl = "http://localhost:8081/api/";
-//        var crossDomain = true;
         var apiUrl = "http://sobnik.com/api/";
         var crossDomain = false;
+        if (sobnik.debugLocalhost)
+        {
+            apiUrl = "http://localhost:8081/api/";
+            crossDomain = true;
+        }
 
         var token = "";
         var requesting = false;
@@ -137,8 +140,11 @@
 
         function call (method, data, callback, errback)
         {
-            if (sobnik.debug)
+            if (sobnik.debugNoServerCalls)
+            {
+                console.log ("Call", method, data);
                 return;
+            }
 
             ajax (method, "POST", data, /* callback= */null, {
                 200: callback,
@@ -156,7 +162,7 @@
         }
 
         // public
-        function sobnik (request, callback, errback)
+        function sobnikCall (request, callback, errback)
         {
             call ("sobnik", request, function (data) {
                 if (data && data.Ads)
@@ -194,7 +200,7 @@
 
         function onSobnik (message, sender, reply)
         {
-            sobnik (message.data, reply, errply (reply));
+            sobnikCall (message.data, reply, errply (reply));
             // async reply
             return true;
         }
@@ -244,7 +250,7 @@
         window.sobnik.server.bg = {
             start: start,
             crawlerJob: crawlerJob,
-            sobnik: sobnik,
+            sobnik: sobnikCall,
             ads: ads,
         }
     }
