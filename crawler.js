@@ -327,8 +327,9 @@
         {
             // random delays 50-120 seconds
             var delays = [];
+            var m = sobnik.debugFastCrawler ? 1 : 10;
             for (var i = 0; i < 30; i++)
-                delays.push (cmn.rdelay (50, 120));
+                delays.push (cmn.rdelay (5 * m, 12 * m));
 
             // multiplier used for back-off
             var delayMult = 1.0;

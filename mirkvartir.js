@@ -51,11 +51,12 @@
 
             photoImage: {
 
+                // FIXME it's not dynamic actually,
+                // makes sense to make it statically defined
                 dynamic: function () {
 
                     var data = {
                         dropImage: true,
-                        detectText: false,
 
                         iterator: {},
                     }

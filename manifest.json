@@ -3,25 +3,29 @@
 
     "name": "Sobnik: фильтрует риелторов",
     "description": "Выявляет посредников в объявлениях по недвижимости",
-    "version": "1.34",
-
+    "version": "1.35",
+    
     "icons": {
         "128": "images/icon_128.png"
     },
 
     "permissions": [
-        "http://sobnik.com/*",
-        "http://www.avito.ru/*",
-        "https://www.avito.ru/*",
-        "http://www.cian.ru/*",
-        "https://www.cian.ru/*",
-        "http://*.mirkvartir.ru/*",
-        "https://*.mirkvartir.ru/*",
-        "http://irr.ru/*",
-        "https://irr.ru/*",
-        "http://*.irr.ru/*",
-        "https://*.irr.ru/*",
-        "tabs",
+	"http://sobnik.com/*",
+	"http://www.avito.ru/*",
+	"https://www.avito.ru/*",
+	"http://www.cian.ru/*",
+	"https://www.cian.ru/*",
+	"http://*.mirkvartir.ru/*",
+	"https://*.mirkvartir.ru/*",
+	"http://irr.ru/*",
+	"https://irr.ru/*",
+	"http://*.irr.ru/*",
+	"https://*.irr.ru/*",
+	"http://sob.ru/*",
+	"https://sob.ru/*",
+	"http://*.sob.ru/*",
+	"https://*.sob.ru/*",
+	"tabs",
         "pageCapture",
         "storage"
     ],
@@ -109,8 +113,30 @@
             "run_at": "document_end"
         },
 
+	{
+	    "matches": ["http://irr.ru/*", "https://irr.ru/*", "http://*.irr.ru/*", "https://*.irr.ru/*"],
+	    "js": [
+		"jquery.js", 
+		"rsvp-latest.min.js", 
+		"jsfeat-min.js", 
+		"init.js",
+		"cmn.js",
+		"pimg.js",
+		"boards.js", 
+		"irr.js", 
+		"capture.js", 
+		"server.js", 
+		"parser.js", 
+		"crawler.js", 
+		"marker.js", 
+		"ui.js", 
+		"tab.js"
+	    ],
+	    "run_at": "document_end"
+	},
+
         {
-            "matches": ["http://irr.ru/*", "https://irr.ru/*", "http://*.irr.ru/*", "https://*.irr.ru/*"],
+            "matches": ["http://sob.ru/*", "https://sob.ru/*", "http://*.sob.ru/*", "https://*.sob.ru/*"],
             "js": [
                 "jquery.js",
                 "rsvp-latest.min.js",
@@ -119,7 +145,7 @@
                 "cmn.js",
                 "pimg.js",
                 "boards.js",
-                "irr.js",
+                "sob.js",
                 "capture.js",
                 "server.js",
                 "parser.js",
