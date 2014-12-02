@@ -69,10 +69,9 @@
     window.sobnik = {
         require: require,
         isFunction: isFunction,
-        // FIXME
 //        debugNoServerCalls: true, 
 //        debugLocalhost: true, 
-        debugFastCrawler: true,
+//        debugFastCrawler: true,
 //        debugStartCrawler: true,
 //        debugStopMarker: true, 
 //        debugPimg: true, 

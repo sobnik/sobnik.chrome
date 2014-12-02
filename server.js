@@ -43,8 +43,10 @@
             crossDomain = true;
         }
 
+        var clientId = "";
+        var requestingClientId = false;
         var token = "";
-        var requesting = false;
+        var requestingToken = false;
 
         var abused = {};
 
@@ -52,7 +54,7 @@
         {
             var headers = {};
             if (token)
-                headers["Authorization"] = token;
+                headers["Authorization"] = clientId+":"+token;
             return headers;
         }
 
@@ -62,28 +64,10 @@
             chrome.storage.local.set ({token: t});
         }
 
-        function requestToken ()
+        function callExt (method, callback, errback)
         {
-            if (requesting)
-                return;
-
-            requesting = true;
-
-            function errback () {
-                console.log ("Refused token");
-                requesting = false;
-                setToken ("");
-            }
-
-            function callback (data) 
-            {
-                console.log ("Token", data);
-                requesting = false;
-                setToken (data.Token);
-            }
-
             $.ajax ({
-                url: apiUrl + "token",
+                url: apiUrl + method,
                 type: "POST",
                 data: null,
                 headers: authHeaders (),
@@ -94,6 +78,29 @@
                 },
                 error: errback
             });
+        }
+
+        function requestToken ()
+        {
+            if (requestingToken)
+                return;
+
+            requestingToken = true;
+
+            function errback () {
+                console.log ("Refused token");
+                requestingToken = false;
+                setToken ("");
+            }
+
+            function callback (data) 
+            {
+                console.log ("Token", data);
+                requestingToken = false;
+                setToken (data.Token);
+            }
+
+            callExt ("token", callback, errback);
         }
 
         function getToken () 
@@ -110,12 +117,59 @@
             });
         }
 
+        function requestClientId ()
+        {
+            if (requestingClientId)
+                return;
+
+            requestingClientId = true;
+
+            function errback () {
+                console.log ("Refused client id");
+                requestingClientId = false;
+                setClientId ("");
+            }
+
+            function callback (data) 
+            {
+                console.log ("ClientId", data);
+                requestingClientId = false;
+                setClientId (data.ClientId);
+            }
+
+            callExt ("client", callback, errback);
+        }
+
+        function getClientId () 
+        {
+            if (clientId)
+                return;
+
+            chrome.storage.local.get ("clientId", function (items) {
+                clientId = items.clientId;
+                if (clientId)
+                    return;
+
+                requestClientId ();
+            });
+        }
+
+        function setClientId (id)
+        {
+            clientId = id;
+            chrome.storage.local.set ({clientId: id});
+        }
+
         function ajax (method, type, data, callback, statbacks, errback)
         {
-            
             if (!statbacks)
                 statbacks = {};
 
+            // FIXME this is temporary until server starts refusing anonymous access
+            if (clientId == "")
+                requestClientId ();
+
+            // forbidden
             statbacks[403] = function () {
                 console.log ("Token expired");
                 setToken ("");
@@ -239,6 +293,7 @@
                 "server.abuse": onAbuse,
             });
 
+            getClientId ();
             getToken ();
 
             chrome.storage.local.get ("abuse", function (items) {
@@ -286,7 +341,7 @@
         }
 
         // public
-        function sobnik (request, callback, errback)
+        function sobnikCall (request, callback, errback)
         {
             bgCall ("sobnik", request, callback, errback);
         }
@@ -305,7 +360,7 @@
 
         window.sobnik.server.tab = {
             crawlerJob: crawlerJob,
-            sobnik: sobnik,
+            sobnik: sobnikCall,
             ads: ads,
             abuse: abuse,
         }
